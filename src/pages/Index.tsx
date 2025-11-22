@@ -27,12 +27,12 @@ const Index = () => {
 
   const videos = [heroVideo, heroVideo2];
 
-  // Não redirecionar automaticamente - usuário pode navegar livremente
-  // O onboarding será acessado apenas quando o usuário clicar em "Começar Agora"
+  // Usuários navegam livremente pela landing page
+  // Autenticação/onboarding acontece apenas quando clicam em botões específicos
 
   const handleProtectedAction = (path: string) => {
     if (user) {
-      if (!onboardingCompleted && path === "/dashboard") {
+      if (!loading && !onboardingCompleted && path === "/dashboard") {
         navigate("/onboarding");
       } else {
         navigate(path);

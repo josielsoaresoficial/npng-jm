@@ -42,12 +42,10 @@ export function useAuth() {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      // Se já existe um perfil com nome válido (não é email), não sobrescrever
       const profileData = existingProfile as any;
-      if (profileData?.name && 
-          !profileData.name.includes('@') && 
-          profileData.name !== 'Usuário') {
-        // Apenas atualizar avatar se necessário
+      
+      // Se perfil existe e onboarding está completo, apenas atualizar avatar
+      if (profileData?.onboarding_completed) {
         const newAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
         if (newAvatar && newAvatar !== profileData.avatar_url) {
           await supabase
@@ -70,7 +68,7 @@ export function useAuth() {
         user_id: user.id,
         name: userName || 'Usuário',
         avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-        onboarding_completed: false, // Novos usuários precisam completar onboarding
+        onboarding_completed: false,
       };
 
       if (existingProfile) {
@@ -84,7 +82,6 @@ export function useAuth() {
           .insert(profilePayload as any);
       }
     } catch (error) {
-      // Silently fail in production, log only in development
       if (import.meta.env.DEV) {
         console.error('Erro ao atualizar perfil:', error);
       }

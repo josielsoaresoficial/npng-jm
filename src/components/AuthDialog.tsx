@@ -131,7 +131,16 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           const profile = profileData as any;
           
           // Redireciona baseado no status do onboarding
-          if (profile?.onboarding_completed) {
+          if (!profile) {
+            // Criar perfil se não existir
+            await supabase
+              .from('profiles' as any)
+              .insert({
+                user_id: data.user.id,
+                onboarding_completed: false
+              } as any);
+            navigate("/onboarding");
+          } else if (profile?.onboarding_completed) {
             navigate("/dashboard");
           } else {
             navigate("/onboarding");
@@ -142,7 +151,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
+            emailRedirectTo: `${window.location.origin}/`,
           },
         });
 
@@ -161,18 +170,27 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           } else if (data?.user && !data?.session) {
             // Email enviado para confirmação
             toast.success(
-              "Conta criada! Verifique seu email para confirmar o cadastro e depois faça login.",
-              { duration: 8000 }
+              "✅ Conta criada! Verifique seu email para confirmar o cadastro antes de fazer login.",
+              { duration: 10000 }
             );
             setEmail("");
             setPassword("");
-            setIsLogin(true); // Volta para tela de login
-          } else {
-            // Usuário já confirmado (não deveria acontecer com auto_confirm=false)
+            setIsLogin(true);
+          } else if (data?.session) {
+            // Usuário autenticado (auto_confirm ativo ou email já confirmado)
             toast.success("Conta criada com sucesso! Redirecionando...");
             onOpenChange(false);
             setEmail("");
             setPassword("");
+            
+            // Criar perfil automaticamente
+            await supabase
+              .from('profiles' as any)
+              .insert({
+                user_id: data.user.id,
+                onboarding_completed: false
+              } as any);
+            
             navigate("/onboarding");
           }
         }
