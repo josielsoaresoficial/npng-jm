@@ -184,28 +184,8 @@ serve(async (req) => {
     // Preparar imagem para a API (remover prefixo data:image se presente)
     const base64Image = image.replace(/^data:image\/[a-z]+;base64,/, "");
 
-    const systemPrompt = `Você é um especialista em nutrição e identificação de alimentos. Analise a imagem fornecida seguindo estas diretrizes:
-
-IDENTIFICAÇÃO DE ALIMENTOS:
-- Liste TODOS os alimentos visíveis, mesmo os parcialmente ocultos ou em pequenas quantidades
-- Destaque ingredientes compostos (ex.: lasanha → massa, molho, queijo, carne)
-- Considere variações regionais ou culturais de nomes de alimentos
-- Evite confusões entre alimentos similares (ex.: maçã vs tomate, laranja vs tangerina)
-- Considere iluminação, ângulo e cor ao identificar
-
-ESTIMATIVA DE PORÇÕES:
-- Use referências visuais (prato, mão, talheres) para estimar volumes
-- Informe a unidade de medida (gramas, xícaras, colheres, unidades) junto com a estimativa
-- Seja o mais preciso possível baseado no contexto visual
-- Indique o nível de confiança da estimativa (alta/média/baixa)
-
-OBSERVAÇÕES ADICIONAIS:
-- Inclua possíveis alergênicos comuns (glúten, lactose, amendoim, etc.)
-- Sugira substituições saudáveis quando aplicável
-- Sinalize se a imagem estiver com baixa qualidade ou iluminação inadequada
-- Forneça uma descrição detalhada e contextual da refeição
-
-Retorne APENAS um JSON válido no seguinte formato:
+    const systemPrompt = `Você é um especialista em nutrição e identificação de alimentos.
+Analise a imagem e retorne APENAS um JSON válido e conciso neste formato:
 {
   "foods": [
     {
@@ -218,8 +198,9 @@ Retorne APENAS um JSON válido no seguinte formato:
   "totalProtein": 0,
   "totalCarbs": 0,
   "totalFat": 0,
-  "notes": "Descrição detalhada da refeição identificada, incluindo: composição visual, confiança da análise, possíveis alergênicos detectados, qualidade da imagem, e observações nutricionais relevantes."
-}`;
+  "notes": "Resumo curto da refeição (máx. 2 frases)"
+}
+NÃO inclua explicações, apenas o JSON.`;
 
     // Chamar Google Gemini API diretamente
     const response = await fetch(
@@ -234,7 +215,6 @@ Retorne APENAS um JSON válido no seguinte formato:
             {
               parts: [
                 { text: systemPrompt },
-                { text: "Analise esta imagem e identifique todos os alimentos presentes com suas informações nutricionais." },
                 {
                   inline_data: {
                     mime_type: "image/jpeg",
@@ -245,8 +225,8 @@ Retorne APENAS um JSON válido no seguinte formato:
             }
           ],
           generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 2048,
+            temperature: 0.2,
+            maxOutputTokens: 1024,
           }
         }),
       }
@@ -306,7 +286,25 @@ Retorne APENAS um JSON válido no seguinte formato:
       );
     }
 
-    const aiContent = candidate.content?.parts?.[0]?.text;
+    // Verificar limite de tokens
+    if (candidate.finishReason === "MAX_TOKENS") {
+      console.error("Resposta cortada por limite de tokens. Candidato:", JSON.stringify(candidate));
+      return new Response(
+        JSON.stringify({ 
+          error: "Resposta muito longa da IA",
+          message: "A resposta da IA foi cortada por limite de tamanho. Tente novamente com uma imagem mais simples ou recorte o prato para focar apenas na comida principal."
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Juntar todos os trechos de texto disponíveis
+    const textParts = candidate.content?.parts
+      ?.map((p: any) => p.text)
+      .filter((t: string | undefined) => !!t);
+
+    const aiContent = textParts && textParts.length > 0 ? textParts.join("\n") : "";
+
     if (!aiContent) {
       console.error("Conteúdo vazio. Candidato completo:", JSON.stringify(candidate));
       console.error("Finish reason:", candidate.finishReason);
