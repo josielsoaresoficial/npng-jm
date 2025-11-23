@@ -36,15 +36,11 @@ const Dashboard = () => {
 
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('name, daily_protein_goal')
+        .select('name')
         .eq('user_id', user.id)
         .maybeSingle();
 
       console.log('Profile data:', profile, 'Error:', error);
-
-      if (profile?.daily_protein_goal) {
-        setProteinGoal(profile.daily_protein_goal);
-      }
 
       if (profile?.name) {
         // Pegar apenas o primeiro nome
