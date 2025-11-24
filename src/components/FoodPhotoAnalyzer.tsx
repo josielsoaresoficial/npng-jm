@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, Loader2, Check } from "lucide-react";
+import { Camera, Loader2, Check, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/untyped";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface FoodAnalysisResult {
   status: string;
@@ -42,6 +50,9 @@ export const FoodPhotoAnalyzer = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<FoodAnalysisResult | null>(null);
+  const [editingFood, setEditingFood] = useState<number | null>(null);
+  const [editedName, setEditedName] = useState("");
+  const [editedGrams, setEditedGrams] = useState("");
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -100,7 +111,7 @@ export const FoodPhotoAnalyzer = () => {
       
       if (data.status === 'sucesso') {
         setAnalysisResult(data);
-        toast.success("Alimento identificado com sucesso!");
+        toast.success("Alimento identificado com sucesso! Revise as informações antes de salvar.");
       } else {
         toast.error("Erro na análise", {
           description: data.message || data.error || "Não foi possível processar a análise."
@@ -119,6 +130,70 @@ export const FoodPhotoAnalyzer = () => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleEditFood = (index: number) => {
+    if (!analysisResult) return;
+    
+    const food = analysisResult.analise.alimentos[index];
+    setEditingFood(index);
+    setEditedName(food.name);
+    
+    // Extrair apenas os números da quantidade
+    const gramsMatch = food.quantity.match(/(\d+)/);
+    setEditedGrams(gramsMatch ? gramsMatch[1] : "");
+  };
+
+  const handleSaveEdit = () => {
+    if (!analysisResult || editingFood === null) return;
+
+    const food = analysisResult.analise.alimentos[editingFood];
+    const originalGrams = parseFloat(food.quantity.match(/(\d+)/)?.[1] || "100");
+    const newGrams = parseFloat(editedGrams);
+
+    if (!newGrams || newGrams <= 0) {
+      toast.error("Digite uma gramagem válida");
+      return;
+    }
+
+    // Calcular proporção
+    const ratio = newGrams / originalGrams;
+
+    // Atualizar alimento
+    const updatedFoods = [...analysisResult.analise.alimentos];
+    updatedFoods[editingFood] = {
+      ...food,
+      name: editedName,
+      quantity: `${newGrams}g`,
+      nutrition: {
+        calories: food.nutrition.calories * ratio,
+        protein: food.nutrition.protein * ratio,
+        carbs: food.nutrition.carbs * ratio,
+        fat: food.nutrition.fat * ratio,
+        fiber: food.nutrition.fiber ? food.nutrition.fiber * ratio : undefined
+      }
+    };
+
+    // Recalcular totais
+    const newTotals = updatedFoods.reduce((acc, curr) => ({
+      calories: acc.calories + curr.nutrition.calories,
+      protein: acc.protein + curr.nutrition.protein,
+      carbs: acc.carbs + curr.nutrition.carbs,
+      fat: acc.fat + curr.nutrition.fat,
+      fiber: (acc.fiber || 0) + (curr.nutrition.fiber || 0)
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
+
+    setAnalysisResult({
+      ...analysisResult,
+      analise: {
+        ...analysisResult.analise,
+        alimentos: updatedFoods,
+        total_refeicao: newTotals
+      }
+    });
+
+    setEditingFood(null);
+    toast.success("Alimento atualizado com sucesso!");
   };
 
   const saveToDatabase = async () => {
@@ -216,17 +291,27 @@ export const FoodPhotoAnalyzer = () => {
                   {analysisResult.analise.alimentos.map((food, index) => (
                     <div key={index} className="bg-background rounded p-3">
                       <div className="flex justify-between items-start mb-2">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">{food.name}</p>
                           <p className="text-xs text-muted-foreground">{food.quantity}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-primary">
-                            {Math.round(food.nutrition.calories)} kcal
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Confiança: {Math.round(food.confidence * 100)}%
-                          </p>
+                        <div className="flex items-start gap-2">
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-primary">
+                              {Math.round(food.nutrition.calories)} kcal
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Confiança: {Math.round(food.confidence * 100)}%
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditFood(index)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                       <div className="grid grid-cols-3 gap-2 text-xs mt-2">
@@ -286,6 +371,46 @@ export const FoodPhotoAnalyzer = () => {
           )}
         </div>
       </Card>
+
+      <Dialog open={editingFood !== null} onOpenChange={() => setEditingFood(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Alimento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="food-name">Nome do Alimento</Label>
+              <Input
+                id="food-name"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                placeholder="Ex: Arroz branco"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="food-grams">Gramagem (g)</Label>
+              <Input
+                id="food-grams"
+                type="number"
+                value={editedGrams}
+                onChange={(e) => setEditedGrams(e.target.value)}
+                placeholder="Ex: 150"
+              />
+              <p className="text-xs text-muted-foreground">
+                Os valores nutricionais serão recalculados automaticamente
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setEditingFood(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              Salvar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
