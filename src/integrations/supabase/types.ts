@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      exercise_history: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          exercise_id: string | null
+          id: string
+          notes: string | null
+          reps_completed: number | null
+          sets_completed: number | null
+          user_id: string
+          weight_used: number | null
+          workout_history_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          exercise_id?: string | null
+          id?: string
+          notes?: string | null
+          reps_completed?: number | null
+          sets_completed?: number | null
+          user_id: string
+          weight_used?: number | null
+          workout_history_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          exercise_id?: string | null
+          id?: string
+          notes?: string | null
+          reps_completed?: number | null
+          sets_completed?: number | null
+          user_id?: string
+          weight_used?: number | null
+          workout_history_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_history_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_history_workout_history_id_fkey"
+            columns: ["workout_history_id"]
+            isOneToOne: false
+            referencedRelation: "workout_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_library: {
         Row: {
           created_at: string
@@ -203,6 +257,92 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weight?: number | null
+        }
+        Relationships: []
+      }
+      workout_history: {
+        Row: {
+          calories_burned: number | null
+          completed_at: string | null
+          created_at: string | null
+          duration_minutes: number | null
+          exercises_completed: Json | null
+          id: string
+          notes: string | null
+          user_id: string
+          workout_id: string | null
+        }
+        Insert: {
+          calories_burned?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          exercises_completed?: Json | null
+          id?: string
+          notes?: string | null
+          user_id: string
+          workout_id?: string | null
+        }
+        Update: {
+          calories_burned?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          exercises_completed?: Json | null
+          id?: string
+          notes?: string | null
+          user_id?: string
+          workout_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_history_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workouts: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          difficulty: string
+          duration_minutes: number
+          estimated_calories: number
+          exercises_data: Json | null
+          id: string
+          image_url: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string
+          duration_minutes?: number
+          estimated_calories?: number
+          exercises_data?: Json | null
+          id?: string
+          image_url?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string
+          duration_minutes?: number
+          estimated_calories?: number
+          exercises_data?: Json | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
