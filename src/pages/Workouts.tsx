@@ -17,6 +17,7 @@ import { MuscleGroupCard } from "@/components/MuscleGroupCard";
 import { MuscleGroupDetailModal } from "@/components/MuscleGroupDetailModal";
 import { BulkGifUploader } from "@/components/BulkGifUploader";
 import { WorkoutRecommendations } from "@/components/WorkoutRecommendations";
+import { useNavigate } from "react-router-dom";
 
 // Import muscle group icons
 import chestIcon from "@/assets/muscle-icons/chest-icon.png";
@@ -54,6 +55,7 @@ const categories = [
 ];
 
 export default function Workouts() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -265,7 +267,7 @@ export default function Workouts() {
               </p>
             </div>
             <Button
-              onClick={() => window.location.href = '/custom-workouts'}
+              onClick={() => navigate('/custom-workouts')}
               size="lg"
               className="gap-2"
             >
