@@ -28,6 +28,8 @@ const NutriAI = () => {
   const [profileName, setProfileName] = useState<string>('');
   const recognitionRef = useRef<any>(null);
   const isRecognitionActive = useRef(false);
+  const interimTranscriptRef = useRef<string>('');
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Detectar se uma mensagem contém uma receita
   const isRecipeMessage = (content: string) => {
@@ -130,15 +132,42 @@ const NutriAI = () => {
         // ✅ NÃO PROCESSAR SE ESTIVER PAUSADO
         if (isPaused) return;
         
+        // Limpar timer anterior
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
+        }
+        
         let finalTranscript = '';
+        let interimTranscript = '';
+        
         for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
           }
         }
+        
+        // Se tiver resultado final, processar imediatamente
         if (finalTranscript.trim()) {
-          console.log('📝 Texto capturado:', finalTranscript);
+          console.log('📝 Texto final capturado:', finalTranscript);
+          interimTranscriptRef.current = '';
           sendMessage(finalTranscript, true);
+        } else if (interimTranscript.trim()) {
+          // Armazenar resultado intermediário
+          interimTranscriptRef.current = interimTranscript;
+          console.log('💬 Texto intermediário:', interimTranscript);
+          
+          // Se não houver mais fala em 1.5s, processar o resultado intermediário
+          silenceTimerRef.current = setTimeout(() => {
+            if (interimTranscriptRef.current.trim()) {
+              console.log('⏱️ Processando por silêncio:', interimTranscriptRef.current);
+              sendMessage(interimTranscriptRef.current, true);
+              interimTranscriptRef.current = '';
+            }
+          }, 1500);
         }
       };
 
@@ -154,6 +183,9 @@ const NutriAI = () => {
     }
     
     return () => {
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+      }
       if (recognitionRef.current && isRecognitionActive.current) {
         recognitionRef.current.stop();
       }
