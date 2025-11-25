@@ -161,6 +161,51 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          age: number | null
+          avatar_url: string | null
+          created_at: string
+          fitness_goal: string | null
+          gender: string | null
+          height: number | null
+          id: string
+          name: string | null
+          onboarding_completed: boolean | null
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          fitness_goal?: string | null
+          gender?: string | null
+          height?: number | null
+          id?: string
+          name?: string | null
+          onboarding_completed?: boolean | null
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          fitness_goal?: string | null
+          gender?: string | null
+          height?: number | null
+          id?: string
+          name?: string | null
+          onboarding_completed?: boolean | null
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
