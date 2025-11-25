@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Timer, Flame, Trophy, RotateCw, Upload } from "lucide-react";
+import { Search, Timer, Flame, Trophy, RotateCw, Upload, Dumbbell } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { WorkoutCard } from "@/components/WorkoutCard";
 import { WorkoutMuscleMap } from "@/components/WorkoutMuscleMap";
@@ -255,12 +255,24 @@ export default function Workouts() {
       <div className="w-full mx-auto px-4 py-6 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Treinos & Exercícios
-          </h1>
-          <p className="text-muted-foreground">
-            Explore treinos rápidos e nossa biblioteca completa de exercícios
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Treinos & Exercícios
+              </h1>
+              <p className="text-muted-foreground">
+                Explore treinos rápidos e nossa biblioteca completa de exercícios
+              </p>
+            </div>
+            <Button
+              onClick={() => window.location.href = '/custom-workouts'}
+              size="lg"
+              className="gap-2"
+            >
+              <Dumbbell className="w-5 h-5" />
+              Meus Treinos
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="workouts" className="w-full">

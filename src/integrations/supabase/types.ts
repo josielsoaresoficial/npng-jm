@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_workout_exercises: {
+        Row: {
+          created_at: string | null
+          custom_workout_id: string
+          exercise_id: string
+          id: string
+          notes: string | null
+          order_index: number
+          reps: string | null
+          rest_time: number | null
+          sets: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          custom_workout_id: string
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          order_index: number
+          reps?: string | null
+          rest_time?: number | null
+          sets?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          custom_workout_id?: string
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps?: string | null
+          rest_time?: number | null
+          sets?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_workout_exercises_custom_workout_id_fkey"
+            columns: ["custom_workout_id"]
+            isOneToOne: false
+            referencedRelation: "custom_workouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_workout_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_workouts: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          difficulty: string | null
+          id: string
+          is_favorite: boolean | null
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          is_favorite?: boolean | null
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          is_favorite?: boolean | null
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercise_history: {
         Row: {
           completed_at: string | null
