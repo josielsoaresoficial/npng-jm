@@ -103,7 +103,7 @@ const NutriAI = () => {
       recognition.maxAlternatives = 3;
 
       recognition.onstart = () => {
-        console.log('🎤 Reconhecimento iniciado');
+        console.log('🎤 Reconhecimento de voz INICIADO - Microfone ativo');
         isRecognitionActive.current = true;
         setIsListening(true);
       };
@@ -129,8 +129,13 @@ const NutriAI = () => {
       };
 
       recognition.onresult = (event: any) => {
+        console.log('🎧 CAPTANDO AUDIO - isPaused:', isPaused, 'isProcessing:', isProcessing);
+        
         // ✅ NÃO PROCESSAR SE ESTIVER PAUSADO
-        if (isPaused) return;
+        if (isPaused) {
+          console.log('⏸️ Reconhecimento pausado, ignorando entrada');
+          return;
+        }
         
         // Limpar timer anterior
         if (silenceTimerRef.current) {
@@ -143,6 +148,7 @@ const NutriAI = () => {
         
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
+          console.log(`📊 Resultado ${i}: "${transcript}" (final: ${event.results[i].isFinal})`);
           if (event.results[i].isFinal) {
             finalTranscript += transcript;
           } else {
@@ -152,18 +158,18 @@ const NutriAI = () => {
         
         // Se tiver resultado final, processar imediatamente
         if (finalTranscript.trim()) {
-          console.log('📝 Texto final capturado:', finalTranscript);
+          console.log('✅ Texto FINAL capturado:', finalTranscript);
           interimTranscriptRef.current = '';
           sendMessage(finalTranscript, true);
         } else if (interimTranscript.trim()) {
           // Armazenar resultado intermediário
           interimTranscriptRef.current = interimTranscript;
-          console.log('💬 Texto intermediário:', interimTranscript);
+          console.log('💬 Texto INTERMEDIÁRIO armazenado:', interimTranscript);
           
           // Se não houver mais fala em 1.5s, processar o resultado intermediário
           silenceTimerRef.current = setTimeout(() => {
             if (interimTranscriptRef.current.trim()) {
-              console.log('⏱️ Processando por silêncio:', interimTranscriptRef.current);
+              console.log('⏱️ Processando por SILÊNCIO:', interimTranscriptRef.current);
               sendMessage(interimTranscriptRef.current, true);
               interimTranscriptRef.current = '';
             }
@@ -196,20 +202,23 @@ const NutriAI = () => {
 
   // ✅ ATIVAÇÃO DO NUTRIAI
   const activateNutriAI = async () => {
+    console.log('🚀 ATIVANDO NutriAI...');
     setIsActive(true);
     
     // Inicia a conversa
     await startConversation();
+    console.log('💬 Conversa iniciada, preparando reconhecimento de voz...');
     
     // Inicia o reconhecimento de voz
     if (recognitionRef.current) {
       setTimeout(() => {
         try {
+          console.log('▶️ Iniciando reconhecimento de voz...');
           recognitionRef.current.start();
         } catch (e) {
-          console.log('⚠️ Reconhecimento já ativo');
+          console.log('⚠️ Erro ao iniciar reconhecimento:', e);
         }
-      }, 1500);
+      }, 2000); // Aumentado para 2s para dar tempo do TTS começar
     }
   };
 
