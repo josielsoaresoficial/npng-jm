@@ -36,11 +36,11 @@ export function PWAInstallPrompt() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Mostrar prompt após 2 segundos
+    // Mostrar prompt após 4 segundos
     const timer = setTimeout(() => {
-      console.log('⏰ 2 segundos passados, mostrando prompt...');
+      console.log('⏰ 4 segundos passados, mostrando prompt...');
       setShowPrompt(true);
-    }, 2000);
+    }, 4000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
