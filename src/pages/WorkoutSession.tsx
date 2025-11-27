@@ -28,6 +28,10 @@ const WorkoutSession: React.FC = () => {
     // Try to get workout from location state first (from direct navigation)
     if (location.state?.workout) {
       setWorkout(location.state.workout);
+    } else if (programId === 'ai-recommendation') {
+      // AI recommendations require state - can't reload from storage
+      toast.error('Dados do treino perdidos. Gere novas recomendações.');
+      navigate('/workouts');
     } else if (programId && dayId) {
       // Otherwise try to load from workout programs
       const loadedWorkout = getWorkoutDay(programId, dayId);
