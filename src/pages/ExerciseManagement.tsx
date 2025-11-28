@@ -164,9 +164,12 @@ const ExerciseManagement: React.FC = () => {
       if (result?.success) {
         const stats = result.stats;
         toast.success(
-          `Storage limpo! ${stats.deleted} arquivos deletados${stats.failed > 0 ? `, ${stats.failed} falharam` : ''}`,
+          `Limpeza completa! ${stats.exercises_deleted} exercícios deletados do banco, ${stats.files_deleted} GIFs deletados do storage${stats.files_failed > 0 ? `, ${stats.files_failed} falharam` : ''}`,
           { id: 'clear-storage', duration: 5000 }
         );
+        
+        // Recarregar lista de exercícios
+        fetchExercises();
       } else {
         throw new Error(result?.error || 'Erro desconhecido');
       }
