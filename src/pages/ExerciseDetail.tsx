@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Play, Clock, Award, Info, ArrowLeft, Dumbbell } from 'lucide-react';
 import { getExerciseById } from '@/database/exercises';
@@ -6,14 +6,76 @@ import AnimatedExercise from '@/components/AnimatedExercise';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from "@/integrations/supabase/client";
 
 const ExerciseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const exercise = getExerciseById(parseInt(id || '0'));
+  const [exercise, setExercise] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!exercise) {
+  useEffect(() => {
+    const fetchExercise = async () => {
+      if (!id) {
+        setError(true);
+        setLoading(false);
+        return;
+      }
+
+      // Primeiro tenta buscar do Supabase (UUID)
+      const { data, error: dbError } = await supabase
+        .from("exercise_library")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (data) {
+        // Mapeia os campos do Supabase para o formato esperado
+        setExercise({
+          id: data.id,
+          name: data.name,
+          muscleGroup: data.muscle_group,
+          difficulty: data.difficulty,
+          equipment: data.equipment || [],
+          duration: data.duration || "30-45min",
+          description: data.description,
+          instructions: data.instructions || [],
+          gif_url: data.gif_url,
+          sets: data.sets || 3,
+          reps: data.reps || "10-12",
+          restTime: data.rest_time || 60,
+          tips: data.tips || []
+        });
+      } else {
+        // Fallback para arquivo local (IDs numéricos antigos)
+        const localExercise = getExerciseById(parseInt(id));
+        if (localExercise) {
+          setExercise(localExercise);
+        } else {
+          setError(true);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchExercise();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Carregando exercício...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !exercise) {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
@@ -67,7 +129,15 @@ const ExerciseDetail = () => {
                   <p className="opacity-90">{exercise.description}</p>
                 </div>
                 <div className="relative bg-white/10 rounded-xl p-6">
-                  <AnimatedExercise animation={exercise.animation} size="large" />
+                  {exercise.gif_url ? (
+                    <img 
+                      src={exercise.gif_url} 
+                      alt={exercise.name}
+                      className="w-32 h-32 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <AnimatedExercise animation={exercise.animation} size="large" />
+                  )}
                 </div>
               </div>
             </div>
