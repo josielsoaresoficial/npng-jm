@@ -32,23 +32,42 @@ serve(async (req) => {
 
     console.log(`✅ Deleted ${deletedCount || 0} existing exercises`);
 
-    // Step 2: List all GIFs in storage bucket
+    // Step 2: List all GIFs in storage bucket with pagination
     console.log('📁 Listing GIFs from storage bucket...');
-    const { data: files, error: listError } = await supabase.storage
-      .from('exercise-gifs')
-      .list();
+    
+    let allFiles: any[] = [];
+    let offset = 0;
+    const limit = 1000; // Maximum per request
+    
+    while (true) {
+      const { data: files, error: listError } = await supabase.storage
+        .from('exercise-gifs')
+        .list('', {
+          limit: limit,
+          offset: offset,
+          sortBy: { column: 'name', order: 'asc' }
+        });
 
-    if (listError) {
-      console.error('Error listing files:', listError);
-      throw listError;
+      if (listError) {
+        console.error('Error listing files:', listError);
+        throw listError;
+      }
+
+      if (!files || files.length === 0) break;
+      
+      allFiles = [...allFiles, ...files];
+      console.log(`📥 Fetched ${files.length} files (total: ${allFiles.length})`);
+      
+      if (files.length < limit) break; // Last page
+      offset += limit;
     }
 
-    console.log(`📊 Found ${files?.length || 0} files in storage`);
+    console.log(`📊 Found ${allFiles.length} total files in storage`);
 
     // Filter only GIF files
-    const gifFiles = files?.filter(file => 
+    const gifFiles = allFiles.filter(file => 
       file.name.toLowerCase().endsWith('.gif')
-    ) || [];
+    );
 
     console.log(`🎬 Processing ${gifFiles.length} GIF files`);
 
