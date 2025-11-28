@@ -307,6 +307,10 @@ export type Database = {
           age: number | null
           avatar_url: string | null
           created_at: string
+          daily_calories_goal: number | null
+          daily_carbs_goal: number | null
+          daily_fat_goal: number | null
+          daily_protein_goal: number | null
           fitness_goal: string | null
           gender: string | null
           height: number | null
@@ -321,6 +325,10 @@ export type Database = {
           age?: number | null
           avatar_url?: string | null
           created_at?: string
+          daily_calories_goal?: number | null
+          daily_carbs_goal?: number | null
+          daily_fat_goal?: number | null
+          daily_protein_goal?: number | null
           fitness_goal?: string | null
           gender?: string | null
           height?: number | null
@@ -335,6 +343,10 @@ export type Database = {
           age?: number | null
           avatar_url?: string | null
           created_at?: string
+          daily_calories_goal?: number | null
+          daily_carbs_goal?: number | null
+          daily_fat_goal?: number | null
+          daily_protein_goal?: number | null
           fitness_goal?: string | null
           gender?: string | null
           height?: number | null
