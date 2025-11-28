@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Play, Info, Dumbbell, ArrowLeft, Loader2 } from 'lucide-react';
+import { Search, Play, Info, Dumbbell, ArrowLeft, Loader2, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import chestIcon from "@/assets/muscle-icons/chest-icon.png";
 import backIcon from "@/assets/muscle-icons/back-icon.png";
 import shouldersIcon from "@/assets/muscle-icons/shoulders-icon.png";
@@ -16,10 +17,14 @@ import cardioIcon from "@/assets/muscle-icons/cardio-icon.png";
 
 const ExerciseLibrary = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedGroup, setSelectedGroup] = useState('peito');
   const [searchTerm, setSearchTerm] = useState('');
   const [exercises, setExercises] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Grupos musculares
   const muscleGroups = [
@@ -37,6 +42,36 @@ const ExerciseLibrary = () => {
     { id: 'outros', name: 'Outros', icon: null }
   ];
 
+  // Buscar userId
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+    fetchUser();
+  }, []);
+
+  // Buscar favoritos do usuário
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!userId) return;
+      
+      const { data, error } = await supabase
+        .from('favorite_exercises')
+        .select('exercise_id')
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('Erro ao buscar favoritos:', error);
+      } else {
+        const favoriteIds = new Set(data?.map(f => f.exercise_id) || []);
+        setFavorites(favoriteIds);
+      }
+    };
+    
+    fetchFavorites();
+  }, [userId]);
+
   // Buscar exercícios do Supabase
   useEffect(() => {
     const fetchExercises = async () => {
@@ -45,8 +80,12 @@ const ExerciseLibrary = () => {
       let query = supabase
         .from('exercise_library')
         .select('*')
-        .eq('muscle_group', selectedGroup)
         .order('name');
+
+      // Filtrar por grupo muscular se não estiver mostrando apenas favoritos
+      if (!showFavoritesOnly) {
+        query = query.eq('muscle_group', selectedGroup);
+      }
 
       if (searchTerm) {
         query = query.ilike('name', `%${searchTerm}%`);
@@ -57,14 +96,21 @@ const ExerciseLibrary = () => {
       if (error) {
         console.error('Erro ao buscar exercícios:', error);
       } else {
-        setExercises(data || []);
+        let filteredData = data || [];
+        
+        // Se mostrar apenas favoritos, filtrar
+        if (showFavoritesOnly) {
+          filteredData = filteredData.filter(ex => favorites.has(ex.id));
+        }
+        
+        setExercises(filteredData);
       }
       
       setLoading(false);
     };
 
     fetchExercises();
-  }, [selectedGroup, searchTerm]);
+  }, [selectedGroup, searchTerm, showFavoritesOnly, favorites]);
 
   const handleExerciseClick = (exerciseId: string) => {
     navigate(`/exercise/${exerciseId}`);
@@ -99,6 +145,67 @@ const ExerciseLibrary = () => {
     });
   };
 
+  const toggleFavorite = async (exerciseId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!userId) {
+      toast({
+        title: "Faça login",
+        description: "Você precisa estar logado para favoritar exercícios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const isFavorite = favorites.has(exerciseId);
+
+    if (isFavorite) {
+      // Remover favorito
+      const { error } = await supabase
+        .from('favorite_exercises')
+        .delete()
+        .eq('user_id', userId)
+        .eq('exercise_id', exerciseId);
+
+      if (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível remover dos favoritos",
+          variant: "destructive"
+        });
+      } else {
+        setFavorites(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(exerciseId);
+          return newSet;
+        });
+        toast({
+          title: "Removido dos favoritos",
+          description: "Exercício removido da sua lista de favoritos"
+        });
+      }
+    } else {
+      // Adicionar favorito
+      const { error } = await supabase
+        .from('favorite_exercises')
+        .insert({ user_id: userId, exercise_id: exerciseId });
+
+      if (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível adicionar aos favoritos",
+          variant: "destructive"
+        });
+      } else {
+        setFavorites(prev => new Set(prev).add(exerciseId));
+        toast({
+          title: "Adicionado aos favoritos",
+          description: "Exercício adicionado à sua lista de favoritos"
+        });
+      }
+    }
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-background py-8 px-4">
@@ -117,8 +224,8 @@ const ExerciseLibrary = () => {
             </div>
           </div>
 
-          {/* Barra de Pesquisa */}
-          <div className="mb-6">
+          {/* Barra de Pesquisa e Filtro de Favoritos */}
+          <div className="mb-6 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input
@@ -129,31 +236,55 @@ const ExerciseLibrary = () => {
                 className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
               />
             </div>
-          </div>
-
-          {/* Grupos Musculares */}
-          <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-8">
-            {muscleGroups.map(group => (
+            
+            {/* Botão de Favoritos */}
+            {userId && (
               <button
-                key={group.id}
-                onClick={() => setSelectedGroup(group.id)}
-                className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all ${
-                  selectedGroup === group.id
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border hover:border-primary/50'
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  showFavoritesOnly
+                    ? 'border-yellow-500 bg-yellow-500/10 text-yellow-600'
+                    : 'border-border hover:border-yellow-500/50'
                 }`}
               >
-                <div className="w-8 h-8 mb-1">
-                  {group.icon ? (
-                    <img src={group.icon} alt={group.name} className="w-full h-full object-contain" />
-                  ) : (
-                    <Dumbbell className="w-full h-full text-muted-foreground" />
-                  )}
-                </div>
-                <span className="text-xs font-medium">{group.name}</span>
+                <Star className={`w-5 h-5 ${showFavoritesOnly ? 'fill-yellow-500' : ''}`} />
+                <span className="font-medium">
+                  {showFavoritesOnly ? 'Mostrando Favoritos' : 'Ver Apenas Favoritos'}
+                </span>
+                {showFavoritesOnly && (
+                  <span className="ml-2 px-2 py-0.5 bg-yellow-500/20 rounded-full text-xs">
+                    {favorites.size}
+                  </span>
+                )}
               </button>
-            ))}
+            )}
           </div>
+
+          {/* Grupos Musculares - Ocultar quando mostrar apenas favoritos */}
+          {!showFavoritesOnly && (
+            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-8">
+              {muscleGroups.map(group => (
+                <button
+                  key={group.id}
+                  onClick={() => setSelectedGroup(group.id)}
+                  className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all ${
+                    selectedGroup === group.id
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <div className="w-8 h-8 mb-1">
+                    {group.icon ? (
+                      <img src={group.icon} alt={group.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <Dumbbell className="w-full h-full text-muted-foreground" />
+                    )}
+                  </div>
+                  <span className="text-xs font-medium">{group.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Lista de Exercícios */}
           {loading ? (
@@ -177,6 +308,19 @@ const ExerciseLibrary = () => {
                         <Dumbbell className="w-16 h-16 text-muted-foreground/30" />
                       )}
                       <div className="absolute top-3 right-3 flex gap-2">
+                        {userId && (
+                          <button
+                            onClick={(e) => toggleFavorite(exercise.id, e)}
+                            className={`p-2 rounded-full shadow-lg transition-colors ${
+                              favorites.has(exercise.id)
+                                ? 'bg-yellow-500 text-white hover:bg-yellow-600'
+                                : 'bg-white/90 text-gray-600 hover:bg-white'
+                            }`}
+                            title={favorites.has(exercise.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                          >
+                            <Star className={`w-4 h-4 ${favorites.has(exercise.id) ? 'fill-white' : ''}`} />
+                          </button>
+                        )}
                         <button
                           onClick={() => startWorkout(exercise)}
                           className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 shadow-lg transition-colors"

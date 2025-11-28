@@ -212,6 +212,35 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_exercises: {
+        Row: {
+          created_at: string | null
+          exercise_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          exercise_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          exercise_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorite_recipes: {
         Row: {
           category: string | null
