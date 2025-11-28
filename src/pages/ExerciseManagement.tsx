@@ -15,7 +15,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BulkGifUploader } from '@/components/BulkGifUploader';
 import { GifValidationUploader } from '@/components/GifValidationUploader';
 import AddExerciseDialog from '@/components/AddExerciseDialog';
-import { PopulateSubdivisions } from '@/components/PopulateSubdivisions';
 import AutoGifUploader from '@/components/AutoGifUploader';
 
 interface Exercise {
@@ -572,9 +571,6 @@ const ExerciseManagement: React.FC = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
-        {/* Populate Subdivisions Button */}
-        <PopulateSubdivisions />
       </div>
     </Layout>
   );
