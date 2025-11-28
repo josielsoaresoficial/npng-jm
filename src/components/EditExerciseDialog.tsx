@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 import { Upload, Loader2, Image as ImageIcon } from 'lucide-react';
+import { detectMuscleGroup } from '@/lib/muscleGroupDetection';
 
 interface Exercise {
   id: string;
@@ -61,11 +62,14 @@ const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
     { value: 'costas', label: 'Costas' },
     { value: 'pernas', label: 'Pernas' },
     { value: 'ombros', label: 'Ombros' },
-    { value: 'bracos', label: 'Braços' },
+    { value: 'biceps', label: 'Bíceps' },
+    { value: 'triceps', label: 'Tríceps' },
     { value: 'abdomen', label: 'Abdômen' },
     { value: 'gluteos', label: 'Glúteos' },
-    { value: 'antebracos', label: 'Antebraços' },
+    { value: 'antebraco', label: 'Antebraço' },
+    { value: 'adutores', label: 'Adutores' },
     { value: 'cardio', label: 'Cardio' },
+    { value: 'outros', label: 'Outros' },
   ];
 
   const difficulties = [
@@ -83,10 +87,23 @@ const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
     'pernas': ['Quadríceps', 'Posteriores', 'Panturrilhas'],
     'abdomen': ['Reto Abdominal', 'Oblíquos', 'Transverso'],
     'gluteos': ['Glúteo Máximo', 'Glúteo Médio', 'Glúteo Mínimo'],
-    'antebracos': ['Flexores', 'Extensores'],
+    'antebraco': ['Flexores', 'Extensores'],
   };
 
   const currentSubdivisions = subdivisionsByMuscle[formData.muscle_group.toLowerCase()] || [];
+
+  const handleNameChange = (newName: string) => {
+    const detectedGroup = detectMuscleGroup(newName);
+    
+    setFormData(prev => ({
+      ...prev,
+      name: newName,
+      // Atualiza grupo muscular apenas se detectou um grupo específico (não "outros")
+      muscle_group: detectedGroup !== 'outros' ? detectedGroup : prev.muscle_group,
+      // Limpa subdivisão se o grupo mudou
+      subdivision: detectedGroup !== 'outros' && detectedGroup !== prev.muscle_group ? '' : prev.subdivision,
+    }));
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -224,9 +241,14 @@ const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => handleNameChange(e.target.value)}
               required
             />
+            {formData.muscle_group !== exercise.muscle_group && (
+              <p className="text-xs text-muted-foreground">
+                ✓ Grupo muscular detectado: {muscleGroups.find(g => g.value === formData.muscle_group)?.label}
+              </p>
+            )}
           </div>
 
           {/* Muscle Group & Difficulty */}
