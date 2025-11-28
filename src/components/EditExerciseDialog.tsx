@@ -273,16 +273,15 @@ const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
           {/* Subdivision */}
           {currentSubdivisions.length > 0 && (
             <div className="space-y-2">
-              <Label>Subdivisão Muscular</Label>
+              <Label>Subdivisão Muscular (Opcional)</Label>
               <Select
-                value={formData.subdivision}
+                value={formData.subdivision || undefined}
                 onValueChange={(value) => setFormData({ ...formData, subdivision: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a subdivisão" />
+                  <SelectValue placeholder="Nenhuma subdivisão específica" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
                   {currentSubdivisions.map((subdivision) => (
                     <SelectItem key={subdivision} value={subdivision}>
                       {subdivision}
