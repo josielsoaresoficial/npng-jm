@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.populate-subdivisions]
 verify_jwt = false
+
+[functions.sync-exercise-gifs]
+verify_jwt = true

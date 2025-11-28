@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Filter, Database, Upload, Plus, Sparkles } from 'lucide-react';
+import { Search, Filter, Database, Upload, Plus, Sparkles, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import ExerciseManagementCard from '@/components/ExerciseManagementCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BulkGifUploader } from '@/components/BulkGifUploader';
@@ -31,6 +32,7 @@ interface Exercise {
 }
 
 const ExerciseManagement: React.FC = () => {
+  const { session } = useAuth();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,6 +41,7 @@ const ExerciseManagement: React.FC = () => {
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [validationUploadOpen, setValidationUploadOpen] = useState(false);
   const [addExerciseOpen, setAddExerciseOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const muscleGroups = [
     { value: 'all', label: 'Todos os Grupos' },
@@ -104,6 +107,43 @@ const ExerciseManagement: React.FC = () => {
     }
   };
 
+  const handleSyncGifs = async () => {
+    if (!session) {
+      toast.error('Você precisa estar logado');
+      return;
+    }
+
+    try {
+      setSyncing(true);
+      toast.loading('Sincronizando GIFs...', { id: 'sync-gifs' });
+
+      const { data, error } = await supabase.functions.invoke('sync-exercise-gifs', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      const stats = data?.stats;
+      if (stats) {
+        toast.success(
+          `Sincronização concluída! ${stats.updated} GIFs vinculados, ${stats.skipped} já existiam, ${stats.invalidFormat} ignorados`,
+          { id: 'sync-gifs' }
+        );
+      } else {
+        toast.success('Sincronização concluída!', { id: 'sync-gifs' });
+      }
+
+      fetchExercises();
+    } catch (error) {
+      console.error('Erro ao sincronizar GIFs:', error);
+      toast.error('Erro ao sincronizar GIFs', { id: 'sync-gifs' });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const filteredExercises = exercises.filter((exercise) => {
     const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesMuscleGroup = selectedMuscleGroup === 'all' || exercise.muscle_group === selectedMuscleGroup;
@@ -139,6 +179,14 @@ const ExerciseManagement: React.FC = () => {
               >
                 <Plus className="w-4 h-4" />
                 Novo Exercício
+              </Button>
+              <Button 
+                onClick={handleSyncGifs}
+                disabled={syncing}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500"
+              >
+                <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                {syncing ? 'Sincronizando...' : 'Sincronizar GIFs'}
               </Button>
               <Button 
                 onClick={() => setValidationUploadOpen(true)}
