@@ -3,7 +3,7 @@ import { GymCard } from "@/components/GymCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2 } from "lucide-react";
+import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/untyped";
@@ -28,6 +28,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Nutrition = () => {
   const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
@@ -56,6 +58,12 @@ const Nutrition = () => {
   const { recipes, isLoading: isLoadingRecipes, deleteRecipe } = useFavoriteRecipes();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Estados para receitas sugeridas
+  const [suggestedRecipes, setSuggestedRecipes] = useState<any[]>([]);
+  const [isLoadingSuggestedRecipes, setIsLoadingSuggestedRecipes] = useState(false);
+  const [selectedSuggestedRecipe, setSelectedSuggestedRecipe] = useState<any | null>(null);
+  const [showRecipeDetailModal, setShowRecipeDetailModal] = useState(false);
   
   // Carregar metas nutricionais do perfil
   const loadNutritionGoals = async () => {
@@ -159,9 +167,53 @@ const Nutrition = () => {
     }
   };
 
+  // Carregar receitas sugeridas automaticamente
+  const loadSuggestedRecipes = async () => {
+    setIsLoadingSuggestedRecipes(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('fitness_goal, daily_calories_goal, daily_protein_goal, daily_carbs_goal, daily_fat_goal')
+        .eq('user_id', user.id)
+        .single();
+
+      const { data, error } = await supabase.functions.invoke('suggest-recipes', {
+        body: {
+          fitnessGoal: profile?.fitness_goal || 'maintenance',
+          dailyCalories: profile?.daily_calories_goal || 2000,
+          dailyProtein: profile?.daily_protein_goal || 150,
+          dailyCarbs: profile?.daily_carbs_goal || 250,
+          dailyFat: profile?.daily_fat_goal || 65,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.recipes) {
+        // Pegar apenas 3 receitas aleatórias
+        const shuffled = data.recipes.sort(() => Math.random() - 0.5);
+        setSuggestedRecipes(shuffled.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar receitas sugeridas:', error);
+      toast({
+        title: "Erro ao carregar receitas",
+        description: "Não foi possível gerar sugestões personalizadas.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingSuggestedRecipes(false);
+    }
+  };
+
   useEffect(() => {
     loadNutritionGoals();
     loadTodayMeals();
+    loadSuggestedRecipes();
   }, []);
 
   const startCamera = async () => {
@@ -1027,42 +1079,64 @@ const Nutrition = () => {
           title="Sugestões Personalizadas"
           description="Baseado nos seus objetivos e preferências"
         >
+          {/* Botão para recarregar receitas */}
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadSuggestedRecipes}
+              disabled={isLoadingSuggestedRecipes}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingSuggestedRecipes ? 'animate-spin' : ''}`} />
+              Novas Receitas
+            </Button>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-gradient-nutrition-subtle">
-              <div className="text-lg mb-2">🥗</div>
-              <h3 className="font-semibold mb-1">Salada Proteica</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Perfeita para atingir sua meta de proteína
-              </p>
-              <div className="text-sm">
-                <span className="font-medium">380 kcal</span> • 
-                <span className="text-secondary"> 35g proteína</span>
+            {isLoadingSuggestedRecipes ? (
+              // Skeleton loading
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-4 rounded-lg bg-gradient-nutrition-subtle">
+                  <Skeleton className="h-6 w-6 mb-2" />
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full mb-3" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))
+            ) : suggestedRecipes.length > 0 ? (
+              suggestedRecipes.map((recipe, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-lg bg-gradient-nutrition-subtle cursor-pointer hover:scale-[1.02] transition-transform"
+                  onClick={() => {
+                    setSelectedSuggestedRecipe(recipe);
+                    setShowRecipeDetailModal(true);
+                  }}
+                >
+                  <div className="text-lg mb-2">
+                    {recipe.category === 'Café da Manhã' ? '☕' : 
+                     recipe.category === 'Almoço' ? '🍽️' :
+                     recipe.category === 'Lanche' ? '🥪' :
+                     recipe.category === 'Jantar' ? '🌙' :
+                     recipe.category === 'Pós-Treino' ? '💪' : '🥗'}
+                  </div>
+                  <h3 className="font-semibold mb-1 line-clamp-1">{recipe.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    {recipe.description}
+                  </p>
+                  <div className="text-sm">
+                    <span className="font-medium">{recipe.calories} kcal</span> • 
+                    <span className="text-secondary"> {recipe.protein}g proteína</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // Fallback se não houver receitas
+              <div className="col-span-3 text-center py-8 text-muted-foreground">
+                <Utensils className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Clique em "Novas Receitas" para ver sugestões personalizadas</p>
               </div>
-            </div>
-
-            <div className="p-4 rounded-lg bg-gradient-nutrition-subtle">
-              <div className="text-lg mb-2">🍓</div>
-              <h3 className="font-semibold mb-1">Smoothie Pós-Treino</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Ideal para recuperação muscular
-              </p>
-              <div className="text-sm">
-                <span className="font-medium">320 kcal</span> • 
-                <span className="text-secondary"> 28g proteína</span>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-lg bg-gradient-nutrition-subtle">
-              <div className="text-lg mb-2">🐟</div>
-              <h3 className="font-semibold mb-1">Salmão Grelhado</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Rico em ômega-3 e proteínas
-              </p>
-              <div className="text-sm">
-                <span className="font-medium">420 kcal</span> • 
-                <span className="text-secondary"> 38g proteína</span>
-              </div>
-            </div>
+            )}
           </div>
         </GymCard>
 
@@ -1217,6 +1291,100 @@ const Nutrition = () => {
           setEditingMeal(null);
         }}
       />
+
+      {/* Modal de Detalhes da Receita Sugerida */}
+      <Dialog open={showRecipeDetailModal} onOpenChange={setShowRecipeDetailModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedSuggestedRecipe?.title}</DialogTitle>
+            <DialogDescription>
+              {selectedSuggestedRecipe?.description}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedSuggestedRecipe && (
+            <div className="space-y-4">
+              {/* Informações básicas */}
+              <div className="flex gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {selectedSuggestedRecipe.prepTime}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Utensils className="w-4 h-4" />
+                  {selectedSuggestedRecipe.servings} porções
+                </div>
+                <Badge variant="secondary">
+                  {selectedSuggestedRecipe.category}
+                </Badge>
+              </div>
+
+              {/* Macros */}
+              <div className="grid grid-cols-4 gap-2 p-3 bg-muted rounded-lg">
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Calorias</div>
+                  <div className="font-semibold">{selectedSuggestedRecipe.calories}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Proteína</div>
+                  <div className="font-semibold text-secondary">{selectedSuggestedRecipe.protein}g</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Carbs</div>
+                  <div className="font-semibold">{selectedSuggestedRecipe.carbs}g</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Gordura</div>
+                  <div className="font-semibold">{selectedSuggestedRecipe.fat}g</div>
+                </div>
+              </div>
+
+              {/* Ingredientes */}
+              <div>
+                <h4 className="font-semibold mb-2">Ingredientes</h4>
+                <ul className="space-y-1 text-sm">
+                  {selectedSuggestedRecipe.ingredients?.map((ing: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      {ing}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Modo de preparo */}
+              <div>
+                <h4 className="font-semibold mb-2">Modo de Preparo</h4>
+                <ol className="space-y-2 text-sm">
+                  {selectedSuggestedRecipe.instructions?.map((step: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs shrink-0">
+                        {i + 1}
+                      </span>
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              {/* Botão para salvar nas favoritas */}
+              <Button
+                variant="nutrition"
+                className="w-full"
+                onClick={() => {
+                  toast({
+                    title: "Receita salva!",
+                    description: "Adicionada às suas receitas favoritas",
+                  });
+                  setShowRecipeDetailModal(false);
+                }}
+              >
+                Salvar nas Favoritas
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
