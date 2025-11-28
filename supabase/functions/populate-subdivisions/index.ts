@@ -143,63 +143,63 @@ Deno.serve(async (req) => {
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Aeróbico' })
-      .eq('muscle_group', 'cardio')
+      .eq('muscle_group', 'Cardio')
       .or('name.ilike.%corrida%,name.ilike.%caminhada%,name.ilike.%bicicleta%,name.ilike.%elíptico%,name.ilike.%remo%,name.ilike.%natação%');
 
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Anaeróbico' })
-      .eq('muscle_group', 'cardio')
+      .eq('muscle_group', 'Cardio')
       .or('name.ilike.%sprint%,name.ilike.%tiro%,name.ilike.%velocidade%');
 
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'HIIT' })
-      .eq('muscle_group', 'cardio')
+      .eq('muscle_group', 'Cardio')
       .or('name.ilike.%burpee%,name.ilike.%jumping%,name.ilike.%mountain climber%,name.ilike.%hiit%,name.ilike.%intervalo%');
 
     // ABDÔMEN
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Reto Abdominal' })
-      .eq('muscle_group', 'abdomen')
+      .eq('muscle_group', 'Abdômen')
       .or('name.ilike.%abdominal%,name.ilike.%crunch%,name.ilike.%sit up%');
 
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Oblíquos' })
-      .eq('muscle_group', 'abdomen')
+      .eq('muscle_group', 'Abdômen')
       .or('name.ilike.%oblíquo%,name.ilike.%russian twist%,name.ilike.%lateral%');
 
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Core' })
-      .eq('muscle_group', 'abdomen')
+      .eq('muscle_group', 'Abdômen')
       .or('name.ilike.%prancha%,name.ilike.%plank%,name.ilike.%hollow%');
 
     // GLÚTEOS
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Glúteo Máximo' })
-      .eq('muscle_group', 'gluteos');
+      .eq('muscle_group', 'Glúteos');
 
     // ANTEBRAÇO
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Flexores' })
-      .eq('muscle_group', 'antebraco')
+      .eq('muscle_group', 'Antebraço')
       .ilike('name', '%rosca%');
 
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Extensores' })
-      .eq('muscle_group', 'antebraco')
+      .eq('muscle_group', 'Antebraço')
       .ilike('name', '%inversa%');
 
     await supabaseClient
       .from('exercise_library')
       .update({ subdivision: 'Pegada' })
-      .eq('muscle_group', 'antebraco')
+      .eq('muscle_group', 'Antebraço')
       .or('name.ilike.%grip%,name.ilike.%farmer%,name.ilike.%dead hang%');
 
     // ADUTORES
