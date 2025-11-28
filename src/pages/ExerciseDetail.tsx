@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Clock, Award, Info, ArrowLeft, Dumbbell } from 'lucide-react';
+import { Play, Clock, Award, Info, ArrowLeft, Dumbbell, Edit } from 'lucide-react';
 import { getExerciseById } from '@/database/exercises';
 import AnimatedExercise from '@/components/AnimatedExercise';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from "@/integrations/supabase/client";
+import EditExerciseDialog from '@/components/EditExerciseDialog';
 
 const ExerciseDetail = () => {
   const { id } = useParams();
@@ -14,6 +15,7 @@ const ExerciseDetail = () => {
   const [exercise, setExercise] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchExercise = async () => {
@@ -241,6 +243,15 @@ const ExerciseDetail = () => {
                   Iniciar Exercício
                 </Button>
                 <Button
+                  onClick={() => setEditDialogOpen(true)}
+                  variant="outline"
+                  className="px-6"
+                  size="lg"
+                >
+                  <Edit className="w-5 h-5 mr-2" />
+                  Editar
+                </Button>
+                <Button
                   onClick={() => navigate('/exercise-library')}
                   variant="outline"
                   className="px-6"
@@ -253,6 +264,33 @@ const ExerciseDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Dialog de Edição */}
+      {exercise && (
+        <EditExerciseDialog
+          exercise={{
+            id: exercise.id,
+            name: exercise.name,
+            muscle_group: exercise.muscleGroup,
+            difficulty: exercise.difficulty,
+            description: exercise.description,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            rest_time: exercise.restTime,
+            duration: exercise.duration,
+            equipment: exercise.equipment,
+            instructions: exercise.instructions,
+            tips: exercise.tips,
+            gif_url: exercise.gif_url
+          }}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={() => {
+            // Recarregar exercício após edição
+            window.location.reload();
+          }}
+        />
+      )}
     </Layout>
   );
 };
