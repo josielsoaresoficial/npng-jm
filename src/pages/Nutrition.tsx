@@ -3,7 +3,7 @@ import { GymCard } from "@/components/GymCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw } from "lucide-react";
+import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw, UtensilsCrossed } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/untyped";
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddCustomFoodDialog } from "@/components/AddCustomFoodDialog";
 
 const Nutrition = () => {
   const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
@@ -64,6 +65,7 @@ const Nutrition = () => {
   const [isLoadingSuggestedRecipes, setIsLoadingSuggestedRecipes] = useState(false);
   const [selectedSuggestedRecipe, setSelectedSuggestedRecipe] = useState<any | null>(null);
   const [showRecipeDetailModal, setShowRecipeDetailModal] = useState(false);
+  const [showCustomFoodDialog, setShowCustomFoodDialog] = useState(false);
   
   // Carregar metas nutricionais do perfil
   const loadNutritionGoals = async () => {
@@ -1042,6 +1044,14 @@ const Nutrition = () => {
                 </h2>
                 <p className="text-muted-foreground">Suas receitas favoritas do NutriAI</p>
               </div>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCustomFoodDialog(true)}
+                className="gap-2"
+              >
+                <UtensilsCrossed className="h-4 w-4" />
+                Adicionar Alimento
+              </Button>
             </div>
 
             {/* Search Bar */}
@@ -1435,6 +1445,18 @@ const Nutrition = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Add Custom Food Dialog */}
+      <AddCustomFoodDialog 
+        open={showCustomFoodDialog}
+        onOpenChange={setShowCustomFoodDialog}
+        onSuccess={() => {
+          toast({
+            title: "Alimento adicionado!",
+            description: "Agora está disponível nas análises de refeições",
+          });
+        }}
+      />
     </Layout>
   );
 };

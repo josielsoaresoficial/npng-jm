@@ -247,19 +247,69 @@ async function fetchUSDANutrition(foodName: string, retryCount = 0): Promise<any
   }
 }
 
-// Função para fazer matching flexível do banco local
-function findLocalNutrition(foodName: string): any | null {
+// Função para buscar alimentos personalizados do usuário no Supabase
+async function fetchCustomFoods(userId: string): Promise<Record<string, any>> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.warn('Supabase não configurado para buscar alimentos personalizados');
+      return {};
+    }
+    
+    const response = await fetch(`${supabaseUrl}/rest/v1/custom_foods?user_id=eq.${userId}&select=*`, {
+      headers: {
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      console.error('Erro ao buscar alimentos personalizados:', response.status);
+      return {};
+    }
+    
+    const customFoods = await response.json();
+    
+    // Converter para formato do nutritionDatabase
+    const customFoodsDB: Record<string, any> = {};
+    customFoods.forEach((food: any) => {
+      customFoodsDB[food.name.toLowerCase()] = {
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        portion: food.portion || "100g"
+      };
+    });
+    
+    console.log(`Carregados ${Object.keys(customFoodsDB).length} alimentos personalizados do usuário`);
+    return customFoodsDB;
+  } catch (error) {
+    console.error('Erro ao buscar alimentos personalizados:', error);
+    return {};
+  }
+}
+
+// Função para fazer matching flexível do banco local (agora inclui alimentos personalizados)
+function findLocalNutrition(foodName: string, customFoodsDB: Record<string, any>): any | null {
   const searchName = foodName.toLowerCase().trim();
   
+  // Criar banco de dados combinado (alimentos padrão + personalizados)
+  const combinedDatabase = { ...nutritionDatabase, ...customFoodsDB };
+  
   // 1. Busca exata
-  if (nutritionDatabase[searchName]) {
-    return { ...nutritionDatabase[searchName], source: "Local DB (exact)" };
+  if (combinedDatabase[searchName]) {
+    return { ...combinedDatabase[searchName], source: "Local DB (exact)" };
   }
   
   // 2. Busca parcial (ingrediente contém termo ou termo contém ingrediente)
-  for (const [key, value] of Object.entries(nutritionDatabase)) {
+  for (const [key, value] of Object.entries(combinedDatabase)) {
     if (searchName.includes(key) || key.includes(searchName)) {
-      return { ...value, source: `Local DB (partial: ${key})` };
+      const isCustom = customFoodsDB[key] ? " - Personalizado" : "";
+      return { ...value, source: `Local DB (partial: ${key})${isCustom}` };
     }
   }
   
@@ -268,9 +318,10 @@ function findLocalNutrition(foodName: string): any | null {
   for (const keyword of keywords) {
     if (keyword.length < 3) continue; // Ignora palavras muito curtas
     
-    for (const [key, value] of Object.entries(nutritionDatabase)) {
+    for (const [key, value] of Object.entries(combinedDatabase)) {
       if (key.includes(keyword)) {
-        return { ...value, source: `Local DB (keyword: ${key})` };
+        const isCustom = customFoodsDB[key] ? " - Personalizado" : "";
+        return { ...value, source: `Local DB (keyword: ${key})${isCustom}` };
       }
     }
   }
@@ -318,6 +369,36 @@ serve(async (req) => {
         JSON.stringify({ error: "Configuração de IA não disponível" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Buscar alimentos personalizados do usuário
+    const authHeader = req.headers.get('Authorization');
+    let customFoodsDB: Record<string, any> = {};
+    
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        
+        if (supabaseUrl && supabaseServiceKey) {
+          // Verificar token do usuário
+          const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'apikey': supabaseServiceKey
+            }
+          });
+          
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            customFoodsDB = await fetchCustomFoods(userData.id);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar alimentos personalizados:', error);
+        // Continuar mesmo sem alimentos personalizados
+      }
     }
 
     console.log("Iniciando análise de imagem com Google Gemini...");
@@ -488,7 +569,7 @@ NÃO calcule macros, apenas liste os alimentos e porções. Seja conciso.`;
         // 2. Se API falhar, buscar no banco local com matching flexível
         if (!nutritionData) {
           console.log(`USDA falhou, buscando localmente: ${foodName}`);
-          nutritionData = findLocalNutrition(foodName);
+          nutritionData = findLocalNutrition(foodName, customFoodsDB);
         }
         
         // 3. Se ainda não encontrou, usar estimativa básica
