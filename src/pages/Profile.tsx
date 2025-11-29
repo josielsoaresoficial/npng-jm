@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { PushNotificationSettings } from "@/components/PushNotificationSettings";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { TrialTimer } from "@/components/TrialTimer";
 
 const Profile = () => {
   // === INÍCIO DAS MODIFICAÇÕES ===
@@ -324,7 +325,8 @@ const Profile = () => {
               Premium
             </Badge>
           ) : (
-            <div className="mt-2 flex items-center justify-center text-muted-foreground">
+            <div className="mt-2 flex flex-col items-center justify-center gap-1">
+              <TrialTimer inline />
               <Hourglass className="w-5 h-5 text-orange-500" />
             </div>
           )}

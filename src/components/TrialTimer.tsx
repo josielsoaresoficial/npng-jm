@@ -2,7 +2,11 @@ import { Clock } from "lucide-react";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { cn } from "@/lib/utils";
 
-export function TrialTimer() {
+interface TrialTimerProps {
+  inline?: boolean;
+}
+
+export function TrialTimer({ inline = false }: TrialTimerProps) {
   const { isTrialActive, timeRemaining } = useTrialStatus();
 
   if (!isTrialActive) return null;
@@ -20,14 +24,15 @@ export function TrialTimer() {
   return (
     <div 
       className={cn(
-        "fixed top-2 right-2 z-50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg",
-        "bg-red-500/90 text-white backdrop-blur-sm shadow-lg",
+        "flex items-center gap-1 px-2 py-1 rounded-md",
+        "bg-red-500/90 text-white shadow-sm",
         "transition-all duration-300",
+        !inline && "fixed top-2 right-2 z-50 backdrop-blur-sm shadow-lg gap-1.5 px-2.5 py-1.5 rounded-lg",
         isUrgent && "animate-pulse"
       )}
     >
       <Clock className="w-3 h-3" />
-      <span className="font-mono text-xs font-semibold">
+      <span className="font-mono text-[10px] font-semibold">
         {formattedTime}
       </span>
     </div>
