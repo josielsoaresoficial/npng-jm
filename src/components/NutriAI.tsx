@@ -31,6 +31,8 @@ const NutriAI = () => {
   const isRecognitionActive = useRef(false);
   const interimTranscriptRef = useRef<string>('');
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [textInput, setTextInput] = useState('');
+  const [voiceSupported, setVoiceSupported] = useState(true);
 
   // Detectar se uma mensagem contém uma receita
   const isRecipeMessage = (content: string) => {
@@ -86,6 +88,23 @@ const NutriAI = () => {
 
   const firstName = getFirstName(profileName);
 
+  // ✅ DETECTAR SUPORTE A VOZ
+  useEffect(() => {
+    const supported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+    setVoiceSupported(supported);
+    if (!supported) {
+      console.log('⚠️ Reconhecimento de voz não disponível - usando entrada de texto');
+    }
+  }, []);
+
+  // ✅ FUNÇÃO PARA ENVIAR TEXTO DIGITADO
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (textInput.trim() && !isProcessing) {
+      sendMessage(textInput.trim(), true);
+      setTextInput('');
+    }
+  };
 
   // ✅ CONFIGURAÇÃO AVANÇADA DE VOZ
   useEffect(() => {
@@ -419,21 +438,41 @@ const NutriAI = () => {
             ))}
             
               {/* ✅ INDICADOR DE STATUS */}
-              {(isListening || isProcessing || isPaused || isAISpeaking) && (
+              {(isListening || isProcessing || isPaused || isAISpeaking || !voiceSupported) && (
                 <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
                   {isPaused && '⏸️ Conversa pausada'}
                   {!isPaused && isAISpeaking && '🔊 NutriAI falando...'}
                   {!isPaused && !isAISpeaking && isListening && '🎤 Ouvindo... Fale agora!'}
                   {!isPaused && !isAISpeaking && isProcessing && '💭 NutriAI processando...'}
+                  {!isPaused && !isAISpeaking && !isProcessing && !isListening && !voiceSupported && '⌨️ Digite sua mensagem abaixo'}
                 </div>
               )}
             </div>
           )}
 
           <div className="p-3 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 rounded-b-2xl">
-            <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
-              {isPaused ? '⏸️ Use o botão ▶️ para retomar' : '💡 Conversa fluida ativa - Fale naturalmente'}
-            </p>
+            <form onSubmit={handleTextSubmit} className="flex gap-2">
+              <input
+                type="text"
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder={voiceSupported ? "Digite ou fale..." : "Digite sua mensagem..."}
+                className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+                disabled={isProcessing || isPaused}
+              />
+              <button
+                type="submit"
+                disabled={!textInput.trim() || isProcessing || isPaused}
+                className="px-3 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Enviar
+              </button>
+            </form>
+            {!voiceSupported && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 text-center mt-2">
+                ⚠️ Voz indisponível neste navegador - use o campo de texto
+              </p>
+            )}
           </div>
         </div>
       )}
