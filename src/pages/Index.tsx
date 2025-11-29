@@ -106,6 +106,9 @@ const Index = () => {
                 Ver Demo
               </Button>
             </div>
+            <p className="text-sm text-white/60 mt-4">
+              Teste grátis por 24 horas
+            </p>
           </div>
         </div>
       </section>
