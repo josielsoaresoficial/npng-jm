@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Timer, Flame, Trophy, RotateCw, Upload, Dumbbell } from "lucide-react";
+import { motion } from "framer-motion";
 import { Layout } from "@/components/Layout";
 import { WorkoutCard } from "@/components/WorkoutCard";
 import { WorkoutMuscleMap } from "@/components/WorkoutMuscleMap";
@@ -323,6 +324,12 @@ export default function Workouts() {
 
           {/* ABA DE TREINOS RÁPIDOS */}
           <TabsContent value="workouts" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
         {/* Search Bar */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
@@ -484,10 +491,17 @@ export default function Workouts() {
             ))}
           </div>
         )}
+            </motion.div>
           </TabsContent>
 
           {/* ABA DE BIBLIOTECA DE EXERCÍCIOS */}
           <TabsContent value="exercises" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
             {/* Barra de Pesquisa */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
@@ -562,6 +576,7 @@ export default function Workouts() {
               onClose={() => setSelectedGroupDetail(null)}
               exercises={filteredExercises || []}
             />
+            </motion.div>
           </TabsContent>
         </Tabs>
       </div>
