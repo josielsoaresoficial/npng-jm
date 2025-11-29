@@ -99,7 +99,7 @@ const WorkoutSession: React.FC = () => {
   };
 
   const handleNextExercise = () => {
-    if (currentExerciseIndex < workout.exercises.length - 1) {
+    if (currentExerciseIndex < (workout?.exercises?.length || 0) - 1) {
       setCurrentExerciseIndex(prev => prev + 1);
       setCurrentSet(0);
       setIsResting(false);
@@ -114,7 +114,7 @@ const WorkoutSession: React.FC = () => {
 
   const finishWorkout = () => {
     const minutes = Math.floor(totalTime / 60);
-    const caloriesBurned = Math.round((workout.exercises.length * 50) + (totalTime / 60) * 8);
+    const caloriesBurned = Math.round(((workout?.exercises?.length || 0) * 50) + (totalTime / 60) * 8);
     
     toast.success('🎉 Treino concluído com sucesso!', {
       description: `Tempo total: ${minutes} min | Calorias: ~${caloriesBurned} kcal`
@@ -192,7 +192,7 @@ const WorkoutSession: React.FC = () => {
             </div>
             
             <WorkoutProgress
-              totalExercises={workout.exercises.length}
+              totalExercises={workout?.exercises?.length || 0}
               completedExercises={completedExercises}
               currentExercise={currentExerciseIndex}
             />
@@ -215,7 +215,7 @@ const WorkoutSession: React.FC = () => {
                   {workout.duration}
                 </span>
                 <span>•</span>
-                <span>{workout.exercises.length} exercícios</span>
+                <span>{workout?.exercises?.length || 0} exercícios</span>
               </div>
               <Button
                 onClick={startWorkout}
@@ -321,7 +321,7 @@ const WorkoutSession: React.FC = () => {
               <div className="bg-card rounded-xl p-6 border">
                 <h3 className="font-semibold mb-4 text-lg">Próximos Exercícios</h3>
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {workout.exercises.slice(currentExerciseIndex + 1).map((exercise, index) => (
+                  {workout?.exercises?.slice(currentExerciseIndex + 1).map((exercise, index) => (
                     <div key={exercise.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                       <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-sm font-medium">
                         {currentExerciseIndex + index + 2}
@@ -347,7 +347,7 @@ const WorkoutSession: React.FC = () => {
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Treino Concluído! 🎉</h2>
               <p className="text-muted-foreground mb-6">
-                Você completou {workout.exercises.length} exercícios em {formatTime(totalTime)}
+                Você completou {workout?.exercises?.length || 0} exercícios em {formatTime(totalTime)}
               </p>
               
               <div className="grid grid-cols-2 gap-4 mb-6 text-left">
@@ -358,7 +358,7 @@ const WorkoutSession: React.FC = () => {
                 <div className="bg-muted/50 rounded-lg p-4">
                   <div className="text-sm text-muted-foreground mb-1">Calorias</div>
                   <div className="text-xl font-bold text-orange-500">
-                    ~{Math.round((workout.exercises.length * 50) + (totalTime / 60) * 8)}
+                    ~{Math.round(((workout?.exercises?.length || 0) * 50) + (totalTime / 60) * 8)}
                   </div>
                 </div>
               </div>
