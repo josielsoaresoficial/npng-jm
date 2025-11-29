@@ -318,9 +318,6 @@ export default function Workouts() {
 
           {/* ABA DE TREINOS RÁPIDOS */}
           <TabsContent value="workouts" className="space-y-6">
-            {/* Componente para popular treinos */}
-            <PopulateWorkouts onComplete={loadWorkouts} />
-
         {/* Search Bar */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
@@ -386,6 +383,9 @@ export default function Workouts() {
             )}
           </CardContent>
         </Card>
+
+        {/* Componente para popular treinos */}
+        <PopulateWorkouts onComplete={loadWorkouts} />
 
         {/* Workout History */}
         {workoutHistory.length > 0 && (
