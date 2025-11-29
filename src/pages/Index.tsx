@@ -107,7 +107,7 @@ const Index = () => {
               </Button>
             </div>
             <p className="text-sm text-white/60 mt-4 flex items-center justify-center gap-2">
-              <ClockIcon className="w-4 h-4" />
+              <ClockIcon className="w-4 h-4 animate-pulse" />
               Teste grátis por 24 horas
             </p>
           </div>
