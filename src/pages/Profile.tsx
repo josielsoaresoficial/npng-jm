@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Settings, Target, Bell, Crown, Smartphone, Globe, Shield, Download, Lock, Trash2, Database } from "lucide-react";
+import { User, Settings, Target, Bell, Crown, Smartphone, Globe, Shield, Download, Lock, Trash2, Database, Hourglass } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { EditableAvatar } from "@/components/EditableAvatar";
@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/untyped";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { PushNotificationSettings } from "@/components/PushNotificationSettings";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
 
 const Profile = () => {
   // === INÍCIO DAS MODIFICAÇÕES ===
@@ -38,6 +39,7 @@ const Profile = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isPremium } = useTrialStatus();
 
   const [userData, setUserData] = useState<UserProfileData>({
     name: '',
@@ -316,10 +318,16 @@ const Profile = () => {
           </div>
           <h1 className="text-2xl md:text-3xl font-bold truncate px-2">{userData.name || "—"}</h1>
           <p className="text-sm md:text-base text-muted-foreground">Membro desde Janeiro 2024</p>
-          <Badge className="mt-2 bg-gradient-fitness text-white text-xs md:text-sm">
-            <Crown className="w-3 h-3 mr-1" />
-            Premium
-          </Badge>
+          {isPremium ? (
+            <Badge className="mt-2 bg-gradient-to-r from-purple-600 to-purple-500 text-white text-xs md:text-sm px-4 py-1">
+              <Crown className="w-3 h-3 mr-1" />
+              Premium
+            </Badge>
+          ) : (
+            <div className="mt-2 flex items-center justify-center text-muted-foreground">
+              <Hourglass className="w-5 h-5 text-orange-500" />
+            </div>
+          )}
         </div>
 
         {/* Profile Stats */}
