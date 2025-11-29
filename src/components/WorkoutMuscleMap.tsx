@@ -279,11 +279,11 @@ export function WorkoutMuscleMap({ view, selectedMuscle, onMuscleSelect }: Worko
     <div className="relative w-full flex flex-col items-center justify-center py-0 gap-2">
       {/* Edit Controls - Mobile e Desktop */}
       <>
-        <div className="flex gap-2 flex-wrap justify-center">
+        <div className="flex gap-2 flex-wrap justify-center px-2">
               <Button 
                 variant={isEditing ? "default" : "outline"} 
-                size="default"
-                className={`gap-2 ${isEditing ? 'animate-pulse' : ''}`}
+                size="sm"
+                className={`gap-2 text-xs sm:text-sm ${isEditing ? 'animate-pulse' : ''}`}
                 onClick={toggleEditMode}
               >
                 <Edit2 className="w-4 h-4" />
@@ -292,14 +292,14 @@ export function WorkoutMuscleMap({ view, selectedMuscle, onMuscleSelect }: Worko
 
               {isEditing && (
                 <>
-                  <Button variant="outline" size="default" className="gap-2" onClick={handleSavePositions}>
+                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm" onClick={handleSavePositions}>
                     <Save className="w-4 h-4" />
                     Salvar Posições
                   </Button>
-                  <Button variant="outline" size="default" onClick={handleResetPositions}>
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={handleResetPositions}>
                     Resetar
                   </Button>
-                  <Button variant="outline" size="default" className="gap-2" onClick={() => setShowAddDialog(true)}>
+                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm" onClick={() => setShowAddDialog(true)}>
                     <PlusCircle className="w-4 h-4" />
                     Adicionar Label
                   </Button>
@@ -308,7 +308,7 @@ export function WorkoutMuscleMap({ view, selectedMuscle, onMuscleSelect }: Worko
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="default" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
                     <Settings className="w-4 h-4" />
                     Ajustes Globais
                   </Button>
@@ -372,7 +372,7 @@ export function WorkoutMuscleMap({ view, selectedMuscle, onMuscleSelect }: Worko
           <img
             src={view === "front" ? bodyFrontWorkout : bodyBackWorkout}
             alt={view === "front" ? "Vista frontal do corpo" : "Vista traseira do corpo"}
-            className="w-[280px] h-auto object-contain transition-opacity duration-300"
+            className="w-[200px] sm:w-[250px] md:w-[280px] h-auto object-contain transition-opacity duration-300"
             style={{ maxHeight: "600px" }}
           />
         </div>

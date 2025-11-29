@@ -290,7 +290,7 @@ export default function Workouts() {
       <div className="w-full mx-auto px-4 py-6 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 Treinos & Exercícios
@@ -302,7 +302,7 @@ export default function Workouts() {
             <Button
               onClick={() => navigate('/custom-workouts')}
               size="lg"
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
             >
               <Dumbbell className="w-5 h-5" />
               Meus Treinos
@@ -349,13 +349,13 @@ export default function Workouts() {
         {/* Muscle Map Selector */}
         <Card className="mb-8">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Selecione o Grupo Muscular</CardTitle>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+              <CardTitle className="text-lg sm:text-xl">Selecione o Grupo Muscular</CardTitle>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleRotate}
-                className="gap-2"
+                className="gap-2 w-full sm:w-auto"
               >
                 <RotateCw className="w-4 h-4" />
                 Girar
@@ -494,14 +494,14 @@ export default function Workouts() {
             </div>
 
             {/* Header com Upload em Lote */}
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div>
-                <h3 className="text-xl font-bold">Grupos Musculares</h3>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+              <div className="w-full sm:w-auto">
+                <h3 className="text-lg sm:text-xl font-bold">Grupos Musculares</h3>
                 <p className="text-sm text-muted-foreground">Clique em um grupo para ver detalhes e exercícios</p>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="default" size="sm" className="gap-2">
+                  <Button variant="default" size="sm" className="gap-2 w-full sm:w-auto">
                     <Upload className="w-4 h-4" />
                     Upload em Lote
                   </Button>
