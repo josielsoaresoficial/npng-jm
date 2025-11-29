@@ -18,6 +18,7 @@ import { MuscleGroupDetailModal } from "@/components/MuscleGroupDetailModal";
 import { BulkGifUploader } from "@/components/BulkGifUploader";
 import { WorkoutRecommendations } from "@/components/WorkoutRecommendations";
 import { useNavigate } from "react-router-dom";
+import { PopulateWorkouts } from "@/components/PopulateWorkouts";
 
 // Import muscle group icons
 import chestIcon from "@/assets/muscle-icons/chest-icon.png";
@@ -317,6 +318,8 @@ export default function Workouts() {
 
           {/* ABA DE TREINOS RÁPIDOS */}
           <TabsContent value="workouts" className="space-y-6">
+            {/* Componente para popular treinos */}
+            <PopulateWorkouts onComplete={loadWorkouts} />
 
         {/* Search Bar */}
         <div className="relative mb-6">
