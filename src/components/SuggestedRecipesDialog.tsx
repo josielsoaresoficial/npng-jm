@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -41,8 +41,44 @@ export const SuggestedRecipesDialog = ({ open, onOpenChange }: SuggestedRecipesD
   const [isSaving, setIsSaving] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<RecipeCategory>('lunch');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const { toast } = useToast();
   const { saveRecipe } = useFavoriteRecipes();
+
+  // Verificar cooldown ao montar o componente
+  useEffect(() => {
+    const savedCooldown = localStorage.getItem('recipe-generation-cooldown');
+    if (savedCooldown) {
+      const cooldownTime = parseInt(savedCooldown);
+      if (cooldownTime > Date.now()) {
+        setCooldownUntil(cooldownTime);
+      } else {
+        localStorage.removeItem('recipe-generation-cooldown');
+      }
+    }
+  }, []);
+
+  // Atualizar countdown
+  useEffect(() => {
+    if (!cooldownUntil) {
+      setCooldownSeconds(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const remaining = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setCooldownUntil(null);
+        setCooldownSeconds(0);
+        localStorage.removeItem('recipe-generation-cooldown');
+      } else {
+        setCooldownSeconds(remaining);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldownUntil]);
 
   const categoryLabels: Record<RecipeCategory, string> = {
     breakfast: 'Café da Manhã',
@@ -70,6 +106,15 @@ export const SuggestedRecipesDialog = ({ open, onOpenChange }: SuggestedRecipesD
   };
 
   const generateRecipes = async () => {
+    if (cooldownUntil && Date.now() < cooldownUntil) {
+      toast({
+        title: "⏳ Aguarde um momento",
+        description: `Você pode gerar novas receitas em ${cooldownSeconds}s`,
+        variant: "default",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -99,7 +144,22 @@ export const SuggestedRecipesDialog = ({ open, onOpenChange }: SuggestedRecipesD
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Tratar erro 429 especificamente
+        if (error.message?.includes('429') || error.message?.includes('Limite de requisições')) {
+          const cooldownTime = Date.now() + 30000; // 30 segundos
+          setCooldownUntil(cooldownTime);
+          localStorage.setItem('recipe-generation-cooldown', cooldownTime.toString());
+          
+          toast({
+            title: "⏳ Muitas requisições",
+            description: "Por favor, aguarde 30 segundos antes de gerar novas receitas",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
 
       if (data?.recipes) {
         setRecipes(data.recipes);
@@ -166,7 +226,7 @@ export const SuggestedRecipesDialog = ({ open, onOpenChange }: SuggestedRecipesD
             <div className="flex gap-2">
               <Button
                 onClick={generateRecipes}
-                disabled={isLoading}
+                disabled={isLoading || (cooldownUntil !== null && Date.now() < cooldownUntil)}
                 className="flex-1"
                 variant="nutrition"
               >
@@ -174,6 +234,11 @@ export const SuggestedRecipesDialog = ({ open, onOpenChange }: SuggestedRecipesD
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Gerando receitas...
+                  </>
+                ) : cooldownSeconds > 0 ? (
+                  <>
+                    <Clock className="w-4 h-4" />
+                    Aguarde {cooldownSeconds}s
                   </>
                 ) : (
                   <>

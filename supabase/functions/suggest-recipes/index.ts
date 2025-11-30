@@ -64,7 +64,7 @@ RETORNE UM JSON VÁLIDO com este formato EXATO:
   ]
 }`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_AI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -84,15 +84,19 @@ RETORNE UM JSON VÁLIDO com este formato EXATO:
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erro na API Google Gemini:', response.status, errorText);
+      
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Limite de requisições excedido. Tente novamente em alguns instantes.' }),
+          JSON.stringify({ 
+            error: 'Limite de requisições da API excedido. Por favor, aguarde 30 segundos e tente novamente.',
+            retryAfter: 30
+          }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
-      const errorText = await response.text();
-      console.error('Erro na API Google Gemini:', response.status, errorText);
       throw new Error('Erro ao gerar receitas');
     }
 
