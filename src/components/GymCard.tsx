@@ -12,15 +12,15 @@ interface GymCardProps {
 
 export function GymCard({ id, title, description, children, variant = "default", className }: GymCardProps) {
   const variantClasses = {
-    fitness: "glass-card shadow-fitness hover:shadow-elevated transition-smooth",
-    nutrition: "glass-card shadow-nutrition hover:shadow-elevated transition-smooth", 
-    default: "glass-card shadow-elevated transition-smooth"
+    fitness: "bg-card border-border/20 hover:border-primary/50 transition-smooth",
+    nutrition: "bg-card border-border/20 hover:border-primary/50 transition-smooth", 
+    default: "bg-card border-border/20 hover:border-border/40 transition-smooth"
   };
 
   return (
     <Card id={id} className={cn(variantClasses[variant], className)}>
       <CardHeader>
-        <CardTitle className="text-foreground">{title}</CardTitle>
+        <CardTitle className="text-foreground font-semibold">{title}</CardTitle>
         {description && (
           <CardDescription className="text-muted-foreground">{description}</CardDescription>
         )}

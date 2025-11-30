@@ -10,7 +10,7 @@ export function Layout({ children }: LayoutProps) {
     <ThemeProvider>
       <div className="min-h-screen bg-background transition-colors duration-300 overflow-x-hidden">
         <Navbar />
-        <main className="pb-20 md:pb-4 md:pt-20 w-full max-w-[100vw] overflow-x-hidden">
+        <main className="pb-20 md:pb-4 md:pt-24 w-full max-w-[100vw] overflow-x-hidden">
           {children}
         </main>
       </div>

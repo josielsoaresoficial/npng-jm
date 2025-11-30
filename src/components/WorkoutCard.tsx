@@ -122,7 +122,7 @@ export function WorkoutCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02] bg-gradient-to-br from-card to-card/50">
+    <Card className="overflow-hidden netflix-card-hover bg-card border-border/20">
       <div className="relative h-48 md:h-56">
         {/* Imagem de fundo */}
         <div className="absolute inset-0">

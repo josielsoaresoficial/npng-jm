@@ -11,15 +11,15 @@ interface StatCardProps {
 
 export function StatCard({ icon, title, value, variant = "default", className }: StatCardProps) {
   const variantClasses = {
-    fitness: "glass-card border-primary/20 hover:border-primary/30 transition-smooth",
-    nutrition: "glass-card border-secondary/20 hover:border-secondary/30 transition-smooth",
-    default: "glass-card border-border hover:border-muted-foreground/30 transition-smooth"
+    fitness: "bg-card/50 border-border/20 hover:border-primary/30 transition-smooth",
+    nutrition: "bg-card/50 border-border/20 hover:border-primary/30 transition-smooth",
+    default: "bg-card/50 border-border/20 hover:border-border/40 transition-smooth"
   };
 
   const iconClasses = {
     fitness: "text-primary",
-    nutrition: "text-secondary",
-    default: "text-muted-foreground"
+    nutrition: "text-primary",
+    default: "text-foreground/60"
   };
 
   return (
@@ -30,7 +30,7 @@ export function StatCard({ icon, title, value, variant = "default", className }:
             {icon}
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-foreground">{value}</h3>
+            <h3 className="text-xl font-bold text-foreground">{value}</h3>
             <p className="text-xs text-muted-foreground">{title}</p>
           </div>
         </div>

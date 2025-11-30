@@ -5,6 +5,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeSelector } from "@/components/ThemeSelector";
+import { useState, useEffect } from "react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -19,6 +20,15 @@ export function Navbar() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { toast } = useToast();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -38,52 +48,57 @@ export function Navbar() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-card border-t border-border/20 md:top-0 md:bottom-auto md:border-b md:border-t-0 safe-area-bottom">
-      <div className="flex justify-around items-center px-4 py-3 md:max-w-7xl md:mx-auto md:justify-between md:gap-8">
-        <div className="hidden md:flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
-            <Dumbbell className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent whitespace-nowrap">
-            nPnG JM
-          </span>
-        </div>
-        
-        <div className="flex justify-between items-center w-full md:w-auto md:justify-start md:gap-2">
-          {navigation.map((item) => {
-            const isActive = location.pathname === item.href;
-            const Icon = item.icon;
-            
-            return (
-              <Link key={item.name} to={item.href}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "flex flex-col items-center gap-0.5 h-auto p-1.5 min-w-[50px] md:flex-row md:gap-2 md:px-4 md:p-2 md:min-w-[60px]",
-                    isActive && "text-primary bg-gradient-fitness-subtle"
-                  )}
-                >
-                  <Icon className="w-4 h-4 md:w-5 md:h-5" />
-                  <span className="text-[10px] md:text-sm leading-tight">{item.name}</span>
-                </Button>
-              </Link>
-            );
-          })}
+    <nav 
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 md:block hidden",
+        scrolled ? "bg-background/95 backdrop-blur-md border-b border-border/20" : "bg-transparent"
+      )}
+    >
+      <div className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+        <div className="flex items-center gap-8">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-2xl font-display font-bold text-primary">
+              nPnG JM
+            </span>
+          </Link>
           
+          <div className="flex items-center gap-1">
+            {navigation.map((item) => {
+              const isActive = location.pathname === item.href;
+              const Icon = item.icon;
+              
+              return (
+                <Link key={item.name} to={item.href}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "flex items-center gap-2 text-sm transition-colors",
+                      isActive 
+                        ? "text-primary font-semibold" 
+                        : "text-foreground/80 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.name}</span>
+                  </Button>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <ThemeSelector />
           <Button
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="flex flex-col items-center gap-0.5 h-auto p-1.5 min-w-[50px] md:flex-row md:gap-2 md:px-4 md:p-2 md:min-w-[60px] text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="text-foreground/80 hover:text-foreground"
           >
-            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="text-[10px] md:text-sm leading-tight">Sair</span>
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair
           </Button>
-        </div>
-
-        <div className="hidden md:block">
-          <ThemeSelector />
         </div>
       </div>
     </nav>
