@@ -318,19 +318,29 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing 
               </>
             )}
 
-            {/* Sorriso simples */}
+            {/* Boca animada (fala quando isSpeaking) */}
             <motion.path
-              d="M 40 60 Q 50 64 60 60"
               stroke="#5a7f93"
               strokeWidth="2"
               strokeLinecap="round"
               fill="none"
               animate={{
-                d: isActive 
-                  ? "M 40 60 Q 50 65 60 60"
-                  : "M 40 60 Q 50 63 60 60"
+                d: isSpeaking 
+                  ? [
+                      "M 40 58 Q 50 68 60 58",  // Boca aberta
+                      "M 40 60 Q 50 62 60 60",  // Boca fechada
+                      "M 40 59 Q 50 65 60 59",  // Boca média
+                      "M 40 60 Q 50 62 60 60",  // Boca fechada
+                    ]
+                  : isActive 
+                    ? "M 40 60 Q 50 65 60 60"   // Sorriso acordado
+                    : "M 40 60 Q 50 63 60 60"   // Sorriso dormindo
               }}
-              transition={{ duration: 0.5 }}
+              transition={{ 
+                duration: isSpeaking ? 0.4 : 0.5,
+                repeat: isSpeaking ? Infinity : 0,
+                ease: "easeInOut"
+              }}
             />
 
             {/* Antena Esquerda */}
