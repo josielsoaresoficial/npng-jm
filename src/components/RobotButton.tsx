@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useSnoringSound } from "@/hooks/useSnoringSound";
 
 interface RobotButtonProps {
   onClick: () => void;
@@ -10,6 +11,9 @@ interface RobotButtonProps {
 }
 
 const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing, mood = 'neutral' }: RobotButtonProps) => {
+  // Hook para som de ronco quando dormindo
+  useSnoringSound(isActive);
+  
   // Definir forma dos olhos baseado no mood
   const getEyeShape = (isLeft: boolean) => {
     const base = isLeft ? 36 : 58;
