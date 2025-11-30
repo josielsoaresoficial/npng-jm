@@ -120,7 +120,7 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
                 ease: "easeInOut",
                 times: [0, 0.2, 0.8, 1]
               }}
-              className="absolute -top-4 right-2 w-2 h-2 bg-white rounded-full border border-gray-200"
+              className="absolute -top-3 left-1/2 translate-x-1 w-1.5 h-1.5 bg-white rounded-full border border-gray-200"
             />
             
             {/* Círculo médio */}
@@ -137,7 +137,7 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
                 delay: 0.3,
                 times: [0, 0.2, 0.8, 1]
               }}
-              className="absolute -top-7 right-4 w-3 h-3 bg-white rounded-full border border-gray-200"
+              className="absolute -top-5 left-1/2 translate-x-0.5 w-2 h-2 bg-white rounded-full border border-gray-200"
             />
 
             {/* Balão principal com zZ */}
@@ -154,9 +154,9 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
                 delay: 0.6,
                 times: [0, 0.2, 0.8, 1]
               }}
-              className="absolute -top-12 right-6 bg-white rounded-2xl px-3 py-2 shadow-lg border border-gray-200"
+              className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white rounded-xl px-2 py-1 shadow-lg border border-gray-200"
             >
-              <span className="text-gray-600 font-bold text-base">zZ</span>
+              <span className="text-gray-600 font-bold text-xs">zZ</span>
             </motion.div>
           </>
         )}
