@@ -15,6 +15,7 @@ import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { Clock } from "@/components/Clock";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { DietTransformationCarousel } from "@/components/DietTransformationCarousel";
 
 
 const Index = () => {
@@ -253,6 +254,11 @@ const Index = () => {
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Veja como nossos usuários transformaram suas vidas com a Dieta de 21 Dias
               </p>
+            </div>
+
+            {/* Carrossel de Transformações Antes/Depois */}
+            <div className="mb-12">
+              <DietTransformationCarousel />
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
