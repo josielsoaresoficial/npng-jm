@@ -77,7 +77,7 @@ RETORNE UM JSON VÁLIDO com este formato EXATO:
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 16384,
           responseMimeType: "application/json"
         }
       }),
@@ -103,10 +103,7 @@ RETORNE UM JSON VÁLIDO com este formato EXATO:
     const data = await response.json();
     console.log('Resposta da API:', JSON.stringify(data, null, 2));
 
-    const finishReason = data.candidates?.[0]?.finishReason;
-    if (finishReason === 'MAX_TOKENS') {
-      throw new Error('Resposta da IA foi truncada. Tente novamente.');
-    }
+    // Removed MAX_TOKENS check - let the model complete the response
 
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!content) {
