@@ -3,7 +3,7 @@ import { GymCard } from "@/components/GymCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw, UtensilsCrossed } from "lucide-react";
+import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw, UtensilsCrossed, Calendar } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -742,6 +742,10 @@ const Nutrition = () => {
               <Button variant="outline" className="w-full" onClick={() => setShowWeeklyReport(true)}>
                 <TrendingUp className="w-4 h-4" />
                 Relatório Semanal
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/diet-21-days")}>
+                <Calendar className="w-4 h-4" />
+                Dieta de 21 Dias
               </Button>
             </div>
           </GymCard>

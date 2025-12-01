@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { useMotivationalMessage } from "@/hooks/useMotivationalMessage";
 import { WelcomeVoice } from "@/components/WelcomeVoice";
+import { Diet21WelcomeBanner } from "@/components/Diet21WelcomeBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   useOptimizedProfile,
@@ -45,6 +46,7 @@ const Dashboard = () => {
   return (
     <Layout>
       <WelcomeVoice />
+      <Diet21WelcomeBanner />
       <div className="w-full px-4 py-6 space-y-6 max-w-7xl mx-auto">
         {/* Header */}
         {isLoading ? (

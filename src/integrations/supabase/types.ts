@@ -146,6 +146,133 @@ export type Database = {
         }
         Relationships: []
       }
+      diet_daily_plans: {
+        Row: {
+          created_at: string
+          day_number: number
+          diet_program_id: string
+          fasting_hours: number
+          id: string
+          is_training_day: boolean
+          is_weekend: boolean
+          meals: Json
+          tips: string[] | null
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          day_number: number
+          diet_program_id: string
+          fasting_hours?: number
+          id?: string
+          is_training_day?: boolean
+          is_weekend?: boolean
+          meals?: Json
+          tips?: string[] | null
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          day_number?: number
+          diet_program_id?: string
+          fasting_hours?: number
+          id?: string
+          is_training_day?: boolean
+          is_weekend?: boolean
+          meals?: Json
+          tips?: string[] | null
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_daily_plans_diet_program_id_fkey"
+            columns: ["diet_program_id"]
+            isOneToOne: false
+            referencedRelation: "diet_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diet_programs: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_days: number
+          id: string
+          is_active: boolean
+          name: string
+          target_goal: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          target_goal: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          target_goal?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      diet_recipes: {
+        Row: {
+          category: string
+          created_at: string
+          diet_program_id: string
+          id: string
+          ingredients: Json
+          instructions: string
+          is_low_carb: boolean
+          is_weekend_meal: boolean
+          macros: Json
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          diet_program_id: string
+          id?: string
+          ingredients?: Json
+          instructions: string
+          is_low_carb?: boolean
+          is_weekend_meal?: boolean
+          macros?: Json
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          diet_program_id?: string
+          id?: string
+          ingredients?: Json
+          instructions?: string
+          is_low_carb?: boolean
+          is_weekend_meal?: boolean
+          macros?: Json
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_recipes_diet_program_id_fkey"
+            columns: ["diet_program_id"]
+            isOneToOne: false
+            referencedRelation: "diet_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_history: {
         Row: {
           completed_at: string | null
@@ -504,6 +631,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_diet_enrollments: {
+        Row: {
+          created_at: string
+          current_day: number
+          diet_program_id: string
+          id: string
+          initial_weight: number | null
+          started_at: string
+          status: string
+          target_weight_loss: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_day?: number
+          diet_program_id: string
+          id?: string
+          initial_weight?: number | null
+          started_at?: string
+          status?: string
+          target_weight_loss?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_day?: number
+          diet_program_id?: string
+          id?: string
+          initial_weight?: number | null
+          started_at?: string
+          status?: string
+          target_weight_loss?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_diet_enrollments_diet_program_id_fkey"
+            columns: ["diet_program_id"]
+            isOneToOne: false
+            referencedRelation: "diet_programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_history: {
         Row: {
