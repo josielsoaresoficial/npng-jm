@@ -10,6 +10,11 @@ import { RobotCarrot } from './robots/RobotCarrot';
 import { RobotBroccoli } from './robots/RobotBroccoli';
 import { RobotWatermelon } from './robots/RobotWatermelon';
 import { RobotStrawberry } from './robots/RobotStrawberry';
+import { RobotEgg } from './robots/RobotEgg';
+import { RobotBanana } from './robots/RobotBanana';
+import { RobotOrange } from './robots/RobotOrange';
+import { RobotTomato } from './robots/RobotTomato';
+import { RobotBlender } from './robots/RobotBlender';
 import { Button } from './ui/button';
 import { Check } from 'lucide-react';
 
@@ -78,6 +83,36 @@ const robots = [
     name: 'Morango Doce',
     description: 'Rosa delicado com sementes',
     component: RobotStrawberry,
+  },
+  {
+    id: 'egg',
+    name: 'Ovo Proteico',
+    description: 'Fofo com gema dourada',
+    component: RobotEgg,
+  },
+  {
+    id: 'banana',
+    name: 'Banana Energética',
+    description: 'Amarela curvada com casca',
+    component: RobotBanana,
+  },
+  {
+    id: 'orange',
+    name: 'Laranja Vitamina C',
+    description: 'Cítrica com gomos visíveis',
+    component: RobotOrange,
+  },
+  {
+    id: 'tomato',
+    name: 'Tomate Antioxidante',
+    description: 'Vermelho com folhas verdes',
+    component: RobotTomato,
+  },
+  {
+    id: 'blender',
+    name: 'Blender Smoothie',
+    description: 'Liquidificador com frutas',
+    component: RobotBlender,
   },
 ];
 

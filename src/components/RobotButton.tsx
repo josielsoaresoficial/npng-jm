@@ -12,6 +12,11 @@ import { RobotCarrot } from './robots/RobotCarrot';
 import { RobotBroccoli } from './robots/RobotBroccoli';
 import { RobotWatermelon } from './robots/RobotWatermelon';
 import { RobotStrawberry } from './robots/RobotStrawberry';
+import { RobotEgg } from './robots/RobotEgg';
+import { RobotBanana } from './robots/RobotBanana';
+import { RobotOrange } from './robots/RobotOrange';
+import { RobotTomato } from './robots/RobotTomato';
+import { RobotBlender } from './robots/RobotBlender';
 
 interface RobotButtonProps {
   onClick: () => void;
@@ -71,6 +76,16 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
         return RobotWatermelon;
       case 'strawberry':
         return RobotStrawberry;
+      case 'egg':
+        return RobotEgg;
+      case 'banana':
+        return RobotBanana;
+      case 'orange':
+        return RobotOrange;
+      case 'tomato':
+        return RobotTomato;
+      case 'blender':
+        return RobotBlender;
       default:
         return RobotKawaii;
     }
