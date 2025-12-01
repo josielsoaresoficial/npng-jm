@@ -14,74 +14,59 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
   // Hook para som de ronco quando dormindo
   useSnoringSound(isActive);
   
-  // Definir forma dos olhos baseado no mood
-  const getEyeShape = (isLeft: boolean) => {
-    const base = isLeft ? 36 : 58;
-    const mid = isLeft ? 39 : 61;
-    const end = isLeft ? 42 : 64;
-    
-    if (!isActive) {
-      // Dormindo - arco pra baixo (fechado)
-      return `M ${base} 48 Q ${mid} 51 ${end} 48`;
-    }
+  // Raios dos olhos kawaii baseado no mood
+  const getEyeSize = () => {
+    if (!isActive) return 3; // Dormindo - pequenos
     
     switch (mood) {
       case 'happy':
-        // Feliz - arco bem aberto e alto
-        return `M ${base} 50 Q ${mid} 45 ${end} 50`;
-      case 'thinking':
-        // Pensativo - semicerrado
-        return `M ${base} 49 Q ${mid} 47 ${end} 49`;
       case 'excited':
-        // Animado - bem aberto e redondo
-        return `M ${base} 51 Q ${mid} 44 ${end} 51`;
+        return 4.5; // Olhos grandes e brilhantes
+      case 'thinking':
+        return 3.5; // Semicerrados
       case 'grateful':
-        // Agradecido - suave e levemente fechado
-        return `M ${base} 49 Q ${mid} 46 ${end} 49`;
+        return 3.8; // Suaves
       default:
-        // Neutro - arco padrão
-        return `M ${base} 50 Q ${mid} 47 ${end} 50`;
+        return 4; // Normal
     }
   };
 
-  // Definir forma da boca baseado no mood
+  // Definir se olhos estão fechados (dormindo)
+  const areEyesClosed = !isActive;
+
+  // Definir forma da boca fofa baseado no mood
   const getMouthShape = () => {
     if (!isActive) {
-      return "M 40 60 Q 50 63 60 60"; // Dormindo
+      return "M 42 68 Q 50 70 58 68"; // Dormindo - boca relaxada
     }
     
     if (isSpeaking) {
-      // Quando falando, usar animação existente
+      // Quando falando, usar animação kawaii
       return [
-        "M 38 55 Q 50 75 62 55",
-        "M 40 60 Q 50 62 60 60",
-        "M 39 57 Q 50 70 61 57",
-        "M 40 60 Q 50 62 60 60",
-        "M 38 56 Q 50 72 62 56",
-        "M 40 60 Q 50 64 60 60",
+        "M 40 66 Q 50 76 60 66", // Aberta
+        "M 42 68 Q 50 70 58 68", // Fechada
+        "M 40 67 Q 50 74 60 67", // Meio aberta
+        "M 42 68 Q 50 70 58 68", // Fechada
+        "M 41 66 Q 50 75 59 66", // Aberta
+        "M 42 68 Q 50 71 58 68", // Semi-fechada
       ];
     }
     
     switch (mood) {
       case 'happy':
-        // Feliz - sorriso grande
-        return "M 38 60 Q 50 68 62 60";
+        return "M 38 66 Q 50 76 62 66"; // Sorriso grande
       case 'thinking':
-        // Pensativo - linha quase reta
-        return "M 40 61 Q 50 62 60 61";
+        return "M 42 69 Q 50 70 58 69"; // Linha pensativa
       case 'excited':
-        // Animado - sorriso enorme
-        return "M 36 59 Q 50 70 64 59";
+        return "M 36 65 Q 50 78 64 65"; // Sorriso enorme
       case 'grateful':
-        // Agradecido - sorriso suave
-        return "M 40 60 Q 50 66 60 60";
+        return "M 40 67 Q 50 74 60 67"; // Sorriso suave
       default:
-        // Neutro - sorriso padrão
-        return "M 40 60 Q 50 65 60 60";
+        return "M 40 67 Q 50 73 60 67"; // Sorriso padrão kawaii
     }
   };
 
-  // Velocidade de pulsação das antenas baseada no mood
+  // Velocidade de pulsação das antenas (folhas) baseada no mood
   const getAntennaPulseSpeed = () => {
     switch (mood) {
       case 'excited':
@@ -227,161 +212,154 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
           className="w-full h-full drop-shadow-2xl"
         >
           <defs>
-            {/* Gradientes */}
+            {/* Gradiente verde menta para o corpo */}
             <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#b8d4e3" />
-              <stop offset="100%" stopColor="#d4e5ed" />
+              <stop offset="0%" stopColor="#a8e6cf" />
+              <stop offset="100%" stopColor="#88d8b0" />
             </linearGradient>
             
-            <linearGradient id="visorGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#1a2634" />
-              <stop offset="100%" stopColor="#0f1419" />
-            </linearGradient>
-
-            <radialGradient id="ledGlow">
-              <stop offset="0%" stopColor="#00e5ff" stopOpacity="1" />
-              <stop offset="100%" stopColor="#00e5ff" stopOpacity="0" />
+            {/* Gradiente para bochechas rosadas */}
+            <radialGradient id="cheekGradient">
+              <stop offset="0%" stopColor="#ffb3ba" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#ffb3ba" stopOpacity="0.2" />
             </radialGradient>
 
-            <radialGradient id="reflectionGradient">
-              <stop offset="0%" stopColor="white" stopOpacity="0.9" />
-              <stop offset="50%" stopColor="white" stopOpacity="0.4" />
+            {/* Gradiente para avental branco */}
+            <linearGradient id="apronGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#f0f0f0" />
+            </linearGradient>
+
+            {/* Brilho dos olhos */}
+            <radialGradient id="eyeShine">
+              <stop offset="0%" stopColor="white" stopOpacity="1" />
               <stop offset="100%" stopColor="white" stopOpacity="0" />
             </radialGradient>
           </defs>
 
-          {/* Base/Pescoço (cone escuro) */}
-          <motion.path
-            d="M 35 80 L 30 100 L 70 100 L 65 80 Z"
-            fill="#1a2634"
-            stroke="#0f1419"
+          {/* Base arredondada verde */}
+          <ellipse
+            cx="50"
+            cy="105"
+            rx="24"
+            ry="12"
+            fill="#27ae60"
+            stroke="#1e8449"
             strokeWidth="1.5"
           />
-
-          {/* Anel de luz na base */}
-          <motion.ellipse
-            cx="50"
-            cy="100"
-            rx="20"
-            ry="5"
-            fill="#00e5ff"
-            opacity={isActive ? 0.9 : 0.5}
-            animate={{
-              opacity: isActive ? [0.9, 1, 0.9] : [0.5, 0.7, 0.5],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+          
+          {/* Avental branco de nutricionista */}
+          <path
+            d="M 32 78 Q 50 85 68 78 L 68 100 Q 50 103 32 100 Z"
+            fill="url(#apronGradient)"
+            stroke="#e0e0e0"
+            strokeWidth="1"
           />
           
-          {/* Brilho do anel */}
-          <motion.ellipse
-            cx="50"
-            cy="100"
-            rx="28"
-            ry="8"
-            fill="url(#ledGlow)"
-            opacity={isActive ? 0.6 : 0.3}
-            animate={{
-              opacity: isActive ? [0.6, 0.8, 0.6] : [0.3, 0.4, 0.3],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+          {/* Ícone de folha verde no avental */}
+          <path
+            d="M 50 88 Q 52 86 54 88 Q 54 91 50 94 Q 46 91 46 88 Q 48 86 50 88 Z"
+            fill="#56ab2f"
+            stroke="#3d8b1f"
+            strokeWidth="0.5"
+          />
+          <path
+            d="M 50 88 Q 50 90 50 92"
+            stroke="#3d8b1f"
+            strokeWidth="0.8"
+            strokeLinecap="round"
           />
 
-          {/* Cabeça */}
+          {/* Cabeça fofa */}
           <motion.g
             animate={{
               y: isActive ? 0 : 3,
             }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            {/* Corpo principal da cabeça */}
+            {/* Corpo principal da cabeça (verde menta arredondado) */}
             <circle
               cx="50"
-              cy="45"
-              r="28"
+              cy="50"
+              r="26"
               fill="url(#bodyGradient)"
-              stroke="#8ba9ba"
-              strokeWidth="1.5"
-            />
-
-            {/* Linha decorativa no topo */}
-            <motion.path
-              d="M 30 32 Q 50 28 70 32"
-              stroke="#6a8a9d"
+              stroke="#7bc8a4"
               strokeWidth="1.8"
-              strokeLinecap="round"
-              fill="none"
             />
 
-            {/* Reflexo oval no topo */}
-            <ellipse
-              cx="50"
-              cy="28"
-              rx="15"
-              ry="10"
-              fill="url(#reflectionGradient)"
-              opacity="0.8"
-            />
+            {/* Olhos kawaii grandes */}
+            {areEyesClosed ? (
+              // Olhos fechados (dormindo) - arcos
+              <>
+                <motion.path
+                  d="M 36 48 Q 40 51 44 48"
+                  stroke="#2d3436"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                <motion.path
+                  d="M 56 48 Q 60 51 64 48"
+                  stroke="#2d3436"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </>
+            ) : (
+              // Olhos abertos - círculos grandes kawaii
+              <>
+                {/* Olho esquerdo */}
+                <motion.circle
+                  cx="40"
+                  cy="48"
+                  r={getEyeSize()}
+                  fill="#2d3436"
+                  animate={isSpeaking ? {
+                    scaleY: [1, 0.3, 1],
+                  } : {}}
+                  transition={{
+                    duration: 0.5,
+                    repeat: isSpeaking ? Infinity : 0,
+                    ease: "easeInOut"
+                  }}
+                />
+                {/* Brilho olho esquerdo - grande */}
+                <circle cx="41.5" cy="46.5" r="1.8" fill="white" opacity="0.95" />
+                {/* Brilho secundário */}
+                <circle cx="38.5" cy="49" r="0.8" fill="white" opacity="0.7" />
+                
+                {/* Olho direito */}
+                <motion.circle
+                  cx="60"
+                  cy="48"
+                  r={getEyeSize()}
+                  fill="#2d3436"
+                  animate={isSpeaking ? {
+                    scaleY: [1, 0.3, 1],
+                  } : {}}
+                  transition={{
+                    duration: 0.5,
+                    repeat: isSpeaking ? Infinity : 0,
+                    ease: "easeInOut",
+                    delay: 0.1
+                  }}
+                />
+                {/* Brilho olho direito - grande */}
+                <circle cx="61.5" cy="46.5" r="1.8" fill="white" opacity="0.95" />
+                {/* Brilho secundário */}
+                <circle cx="58.5" cy="49" r="0.8" fill="white" opacity="0.7" />
+              </>
+            )}
 
-            {/* Visor escuro retangular arredondado */}
-            <rect
-              x="28"
-              y="40"
-              width="44"
-              height="18"
-              rx="9"
-              fill="url(#visorGradient)"
-              stroke="#0f1419"
-              strokeWidth="1"
-            />
+            {/* Bochechas rosadas fofas */}
+            <circle cx="32" cy="56" r="5" fill="url(#cheekGradient)" opacity="0.8" />
+            <circle cx="68" cy="56" r="5" fill="url(#cheekGradient)" opacity="0.8" />
 
-            {/* Olhos - Expressões contextuais */}
+            {/* Boca fofa kawaii */}
             <motion.path
-              stroke="#5dcde3"
-              strokeWidth="2.8"
-              strokeLinecap="round"
-              fill="none"
-              animate={{
-                d: isSpeaking 
-                  ? [getEyeShape(true), `M 36 50 Q 39 46 42 50`, getEyeShape(true)]
-                  : getEyeShape(true)
-              }}
-              transition={{ 
-                duration: isSpeaking ? 0.5 : 0.4, 
-                repeat: isSpeaking ? Infinity : 0,
-                ease: "easeInOut"
-              }}
-            />
-            
-            <motion.path
-              stroke="#5dcde3"
-              strokeWidth="2.8"
-              strokeLinecap="round"
-              fill="none"
-              animate={{
-                d: isSpeaking 
-                  ? [getEyeShape(false), `M 58 50 Q 61 46 64 50`, getEyeShape(false)]
-                  : getEyeShape(false)
-              }}
-              transition={{ 
-                duration: isSpeaking ? 0.5 : 0.4, 
-                repeat: isSpeaking ? Infinity : 0,
-                ease: "easeInOut",
-                delay: isSpeaking ? 0.1 : 0
-              }}
-            />
-
-            {/* Boca animada (expressões contextuais) */}
-            <motion.path
-              stroke="#6a8a9d"
-              strokeWidth="2.2"
+              stroke="#ff6b6b"
+              strokeWidth="2.5"
               strokeLinecap="round"
               fill="none"
               animate={{
@@ -396,16 +374,16 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
               }}
             />
             
-            {/* Interior da boca (aparece quando muito aberta) */}
+            {/* Interior da boca (aparece quando muito aberta ao falar) */}
             {isSpeaking && (
               <motion.ellipse
                 cx="50"
-                cy="66"
-                rx="8"
-                ry="6"
-                fill="rgba(106, 138, 157, 0.35)"
+                cy="72"
+                rx="7"
+                ry="5"
+                fill="rgba(255, 107, 107, 0.3)"
                 animate={{
-                  opacity: [0.35, 0, 0.25, 0, 0.3, 0],
+                  opacity: [0.3, 0, 0.25, 0, 0.3, 0],
                 }}
                 transition={{
                   duration: 0.5,
@@ -415,68 +393,80 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
               />
             )}
 
-            {/* Antena Esquerda */}
+            {/* Antena Esquerda com folha */}
             <g>
-              {/* Base cilíndrica */}
-              <ellipse cx="24" cy="25" rx="3" ry="2" fill="#1a2634" />
-              <rect x="21" y="25" width="6" height="3" fill="#1a2634" />
-              <ellipse cx="24" cy="28" rx="3" ry="2" fill="#0f1419" />
-              
-              {/* Haste vertical */}
-              <line x1="24" y1="28" x2="18" y2="15" stroke="#1a2634" strokeWidth="2.5" strokeLinecap="round" />
-              
-              {/* LED cyan na ponta */}
-              <motion.circle
-                cx="18"
-                cy="15"
-                r="3.5"
-                fill="#00e5ff"
-                animate={{
-                  opacity: isActive ? [1, 0.5, 1] : [0.7, 0.4, 0.7],
-                }}
+              {/* Haste verde orgânica */}
+              <motion.line 
+                x1="32" 
+                y1="30" 
+                x2="22" 
+                y2="16" 
+                stroke="#56ab2f" 
+                strokeWidth="2.2" 
+                strokeLinecap="round"
+                animate={isActive ? {
+                  y1: [30, 28, 30],
+                } : {}}
                 transition={{
                   duration: getAntennaPulseSpeed(),
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
               />
-              {/* Glow do LED */}
-              <motion.circle
-                cx="18"
-                cy="15"
-                r="6"
-                fill="url(#ledGlow)"
-                opacity={isActive ? 0.7 : 0.4}
+              
+              {/* Folha verde na ponta */}
+              <motion.path
+                d="M 22 16 Q 18 14 16 16 Q 18 18 22 16 Z"
+                fill="#56ab2f"
+                stroke="#3d8b1f"
+                strokeWidth="0.8"
                 animate={{
-                  opacity: isActive ? [0.7, 0.3, 0.7] : [0.4, 0.2, 0.4],
+                  rotate: isActive ? [0, 10, -10, 0] : [0, 5, -5, 0],
+                  scale: isActive ? [1, 1.1, 1] : [1, 1.05, 1],
                 }}
                 transition={{
                   duration: getAntennaPulseSpeed(),
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
+                style={{ originX: "22px", originY: "16px" }}
+              />
+              
+              {/* Nervura da folha */}
+              <motion.line
+                x1="22"
+                y1="16"
+                x2="18"
+                y2="16"
+                stroke="#3d8b1f"
+                strokeWidth="0.6"
+                opacity="0.7"
+                animate={{
+                  rotate: isActive ? [0, 10, -10, 0] : [0, 5, -5, 0],
+                }}
+                transition={{
+                  duration: getAntennaPulseSpeed(),
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{ originX: "22px", originY: "16px" }}
               />
             </g>
 
-            {/* Antena Direita */}
+            {/* Antena Direita com maçã */}
             <g>
-              {/* Base cilíndrica */}
-              <ellipse cx="76" cy="25" rx="3" ry="2" fill="#1a2634" />
-              <rect x="73" y="25" width="6" height="3" fill="#1a2634" />
-              <ellipse cx="76" cy="28" rx="3" ry="2" fill="#0f1419" />
-              
-              {/* Haste vertical */}
-              <line x1="76" y1="28" x2="82" y2="15" stroke="#1a2634" strokeWidth="2.5" strokeLinecap="round" />
-              
-              {/* LED cyan na ponta */}
-              <motion.circle
-                cx="82"
-                cy="15"
-                r="3.5"
-                fill="#00e5ff"
-                animate={{
-                  opacity: isActive ? [0.5, 1, 0.5] : [0.4, 0.7, 0.4],
-                }}
+              {/* Haste verde orgânica */}
+              <motion.line 
+                x1="68" 
+                y1="30" 
+                x2="78" 
+                y2="16" 
+                stroke="#56ab2f" 
+                strokeWidth="2.2" 
+                strokeLinecap="round"
+                animate={isActive ? {
+                  y1: [30, 28, 30],
+                } : {}}
                 transition={{
                   duration: getAntennaPulseSpeed(),
                   repeat: Infinity,
@@ -484,15 +474,17 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
                   delay: 0.5
                 }}
               />
-              {/* Glow do LED */}
+              
+              {/* Maçãzinha vermelha fofa */}
               <motion.circle
-                cx="82"
-                cy="15"
-                r="6"
-                fill="url(#ledGlow)"
-                opacity={isActive ? 0.7 : 0.4}
+                cx="78"
+                cy="16"
+                r="3.5"
+                fill="#ff6b6b"
+                stroke="#d63447"
+                strokeWidth="0.8"
                 animate={{
-                  opacity: isActive ? [0.3, 0.7, 0.3] : [0.2, 0.4, 0.2],
+                  scale: isActive ? [1, 1.15, 1] : [1, 1.08, 1],
                 }}
                 transition={{
                   duration: getAntennaPulseSpeed(),
@@ -500,6 +492,45 @@ const RobotButton = ({ onClick, isActive, isListening, isSpeaking, isProcessing,
                   ease: "easeInOut",
                   delay: 0.5
                 }}
+                style={{ originX: "78px", originY: "16px" }}
+              />
+              
+              {/* Folhinha no topo da maçã */}
+              <motion.path
+                d="M 78 12.5 Q 77 11 76 12"
+                stroke="#56ab2f"
+                strokeWidth="1"
+                strokeLinecap="round"
+                fill="none"
+                animate={{
+                  scale: isActive ? [1, 1.15, 1] : [1, 1.08, 1],
+                }}
+                transition={{
+                  duration: getAntennaPulseSpeed(),
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5
+                }}
+                style={{ originX: "78px", originY: "16px" }}
+              />
+              
+              {/* Brilho na maçã */}
+              <motion.circle
+                cx="79"
+                cy="14.5"
+                r="1"
+                fill="white"
+                opacity="0.7"
+                animate={{
+                  scale: isActive ? [1, 1.15, 1] : [1, 1.08, 1],
+                }}
+                transition={{
+                  duration: getAntennaPulseSpeed(),
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5
+                }}
+                style={{ originX: "78px", originY: "16px" }}
               />
             </g>
           </motion.g>
