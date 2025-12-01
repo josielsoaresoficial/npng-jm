@@ -5,6 +5,11 @@ import { RobotChef } from './robots/RobotChef';
 import { RobotApple } from './robots/RobotApple';
 import { RobotSalad } from './robots/RobotSalad';
 import { RobotCapsule } from './robots/RobotCapsule';
+import { RobotAvocado } from './robots/RobotAvocado';
+import { RobotCarrot } from './robots/RobotCarrot';
+import { RobotBroccoli } from './robots/RobotBroccoli';
+import { RobotWatermelon } from './robots/RobotWatermelon';
+import { RobotStrawberry } from './robots/RobotStrawberry';
 import { Button } from './ui/button';
 import { Check } from 'lucide-react';
 
@@ -44,6 +49,36 @@ const robots = [
     description: 'Moderno e tecnológico',
     component: RobotCapsule,
   },
+  {
+    id: 'avocado',
+    name: 'Abacate Fofo',
+    description: 'Verde cremoso com caroço',
+    component: RobotAvocado,
+  },
+  {
+    id: 'carrot',
+    name: 'Cenoura Alegre',
+    description: 'Laranja vibrante com folhas',
+    component: RobotCarrot,
+  },
+  {
+    id: 'broccoli',
+    name: 'Brócolis Saudável',
+    description: 'Verde escuro e nutritivo',
+    component: RobotBroccoli,
+  },
+  {
+    id: 'watermelon',
+    name: 'Melancia Refrescante',
+    description: 'Fatia vermelha com sementes',
+    component: RobotWatermelon,
+  },
+  {
+    id: 'strawberry',
+    name: 'Morango Doce',
+    description: 'Rosa delicado com sementes',
+    component: RobotStrawberry,
+  },
 ];
 
 export const RobotSelector = ({ onSelect, currentSelection = 'kawaii' }: RobotSelectorProps) => {
@@ -69,7 +104,7 @@ export const RobotSelector = ({ onSelect, currentSelection = 'kawaii' }: RobotSe
       </div>
 
       {/* Robot Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {robots.map((robot) => {
           const RobotComponent = robot.component;
           const isSelected = selected === robot.id;
