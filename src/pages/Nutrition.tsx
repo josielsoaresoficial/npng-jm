@@ -3,7 +3,7 @@ import { GymCard } from "@/components/GymCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw, UtensilsCrossed } from "lucide-react";
+import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw, UtensilsCrossed, Calendar } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,7 @@ import { useFavoriteRecipes } from "@/hooks/useFavoriteRecipes";
 import { RecipeCard } from "@/components/RecipeCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { useOptimizedProfile } from "@/hooks/useOptimizedQuery";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +62,7 @@ const Nutrition = () => {
   const { recipes, isLoading: isLoadingRecipes, deleteRecipe, updateRecipe, saveRecipe: saveFavoriteRecipe } = useFavoriteRecipes();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: profile } = useOptimizedProfile();
   
   // Estados para receitas sugeridas
   const [suggestedRecipes, setSuggestedRecipes] = useState<any[]>([]);
@@ -735,6 +737,12 @@ const Nutrition = () => {
                 <Utensils className="w-4 h-4" />
                 Receitas Sugeridas
               </Button>
+              {profile?.fitness_goal === 'weight_loss' && (
+                <Button variant="outline" className="w-full" onClick={() => navigate('/diet-21-days')}>
+                  <Calendar className="w-4 h-4" />
+                  Dieta de 21 Dias
+                </Button>
+              )}
               <Button variant="outline" className="w-full" onClick={() => setShowGoalsDialog(true)}>
                 <Target className="w-4 h-4" />
                 Ajustar Metas

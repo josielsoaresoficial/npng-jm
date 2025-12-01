@@ -33,6 +33,7 @@ import ExerciseStats from "./pages/ExerciseStats";
 import WorkoutHistory from "./pages/WorkoutHistory";
 import CustomWorkouts from "./pages/CustomWorkouts";
 import CustomFoods from "./pages/CustomFoods";
+import Diet21Days from "./pages/Diet21Days";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +74,7 @@ const AppContent = () => {
         <Route path="/workout-history" element={<ProtectedRoute><WorkoutHistory /></ProtectedRoute>} />
         <Route path="/custom-workouts" element={<ProtectedRoute><CustomWorkouts /></ProtectedRoute>} />
         <Route path="/custom-foods" element={<ProtectedRoute><CustomFoods /></ProtectedRoute>} />
+        <Route path="/diet-21-days" element={<ProtectedRoute><Diet21Days /></ProtectedRoute>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
