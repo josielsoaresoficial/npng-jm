@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { GymCard } from "@/components/GymCard";
 import { StatCard } from "@/components/StatCard";
-import { Dumbbell, Apple, TrendingUp, Zap, Camera, Users, ChefHat, Clock as ClockIcon } from "lucide-react";
+import { Dumbbell, Apple, TrendingUp, Zap, Camera, Users, ChefHat, Clock as ClockIcon, Calendar } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import heroVideo from "@/assets/hero-video.mp4";
 import heroVideo2 from "@/assets/hero-video-2.mp4";
@@ -197,7 +197,7 @@ const Index = () => {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-16">
             <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
               <StatCard
                 icon={<Users className="w-6 h-6" />}
@@ -227,6 +227,14 @@ const Index = () => {
                 icon={<TrendingUp className="w-6 h-6" />}
                 title="Precisão IA"
                 value="90%+"
+                variant="nutrition"
+              />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '400ms' }}>
+              <StatCard
+                icon={<Calendar className="w-6 h-6" />}
+                title="Dieta de 21 Dias"
+                value="21"
                 variant="nutrition"
               />
             </div>
