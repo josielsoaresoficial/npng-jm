@@ -265,31 +265,87 @@ const NutriCharacter = ({ isActive, isSpeaking, mood, size = 120 }: NutriCharact
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          {/* Bubble */}
-          <ellipse cx="175" cy="35" rx="30" ry="22" fill="white" stroke="hsl(210 20% 85%)" strokeWidth="1" />
-          <circle cx="155" cy="55" r="6" fill="white" stroke="hsl(210 20% 85%)" strokeWidth="1" />
-          <circle cx="145" cy="65" r="4" fill="white" stroke="hsl(210 20% 85%)" strokeWidth="1" />
+          {/* Balão principal com flutuação */}
+          <motion.ellipse 
+            cx="175" 
+            cy="35" 
+            rx="30" 
+            ry="22" 
+            fill="white" 
+            stroke="hsl(210 20% 85%)" 
+            strokeWidth="1"
+            animate={{ 
+              y: [0, -3, 0],
+              scaleY: [1, 1.03, 1]
+            }}
+            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+          />
           
-          {/* ZZZ text */}
+          {/* Bolinhas de conexão com pulso */}
+          <motion.circle 
+            cx="155" 
+            cy="55" 
+            r="6" 
+            fill="white" 
+            stroke="hsl(210 20% 85%)" 
+            strokeWidth="1"
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5, delay: 0.2, ease: "easeInOut" }}
+          />
+          <motion.circle 
+            cx="145" 
+            cy="65" 
+            r="4" 
+            fill="white" 
+            stroke="hsl(210 20% 85%)" 
+            strokeWidth="1"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5, delay: 0.4, ease: "easeInOut" }}
+          />
+          
+          {/* Três Z's flutuando sequencialmente */}
           <motion.text
-            x="160"
-            y="32"
-            fontSize="12"
+            x="162"
+            y="40"
+            fontSize="10"
             fontWeight="bold"
-            fill="hsl(220 40% 30%)"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            fill="hsl(220 40% 35%)"
+            animate={{ 
+              y: [0, -12, -24],
+              opacity: [0, 1, 0],
+              scale: [0.6, 1, 0.7]
+            }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeOut" }}
           >
             z
           </motion.text>
           <motion.text
-            x="173"
-            y="42"
-            fontSize="16"
+            x="170"
+            y="38"
+            fontSize="14"
+            fontWeight="bold"
+            fill="hsl(220 40% 30%)"
+            animate={{ 
+              y: [0, -12, -24],
+              opacity: [0, 1, 0],
+              scale: [0.6, 1, 0.7]
+            }}
+            transition={{ repeat: Infinity, duration: 2.5, delay: 0.6, ease: "easeOut" }}
+          >
+            z
+          </motion.text>
+          <motion.text
+            x="180"
+            y="36"
+            fontSize="18"
             fontWeight="bold"
             fill="hsl(220 40% 25%)"
-            animate={{ opacity: [0.7, 1, 0.7] }}
-            transition={{ repeat: Infinity, duration: 2, delay: 0.3 }}
+            animate={{ 
+              y: [0, -12, -24],
+              opacity: [0, 1, 0],
+              scale: [0.6, 1, 0.7]
+            }}
+            transition={{ repeat: Infinity, duration: 2.5, delay: 1.2, ease: "easeOut" }}
           >
             Z
           </motion.text>
