@@ -3,7 +3,7 @@ import { GymCard } from "@/components/GymCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw, UtensilsCrossed, Calendar, Settings } from "lucide-react";
+import { Camera, Upload, Utensils, Target, Zap, Plus, Clock, TrendingUp, X, ChefHat, Search, Trash2, RefreshCw, UtensilsCrossed, Calendar } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -1479,19 +1479,6 @@ const Nutrition = () => {
         }}
       />
 
-      {/* TEMPORARY: Robot Selection Button */}
-      <motion.button
-        onClick={() => navigate('/select-robot')}
-        className="fixed bottom-52 right-4 md:bottom-40 md:right-6 z-50 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-3 shadow-lg focus:outline-none"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        transition={{ duration: 0.3 }}
-        title="Escolher Robô"
-      >
-        <Settings className="w-5 h-5" />
-      </motion.button>
     </Layout>
   );
 };
