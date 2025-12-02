@@ -90,7 +90,7 @@ serve(async (req) => {
       }
     }
 
-    // ===== CÓDIGO ELEVENLABS COM FAILOVER DE 5 API KEYS =====
+    // ===== CÓDIGO ELEVENLABS COM UMA API KEY =====
 
     // Criar chave de cache
     const cacheKey = `${voiceProvider}:${text.substring(0, 100)}`;
@@ -120,17 +120,11 @@ serve(async (req) => {
       voiceId = Deno.env.get('ELEVENLABS_VOICE_MALE') || 'TX3LPaxmHKxFdv7VOQHJ'; // Liam
     }
 
-    // Carregar todas as 5 API keys disponíveis
-    const API_KEYS = [
-      Deno.env.get('ELEVENLABS_API_KEY_1'),
-      Deno.env.get('ELEVENLABS_API_KEY_2'),
-      Deno.env.get('ELEVENLABS_API_KEY_3'),
-      Deno.env.get('ELEVENLABS_API_KEY_4'),
-      Deno.env.get('ELEVENLABS_API_KEY_5'),
-    ].filter(Boolean); // Remove keys não configuradas
+    // Obter a API key única
+    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 
-    if (API_KEYS.length === 0) {
-      console.error('Nenhuma API key ElevenLabs configurada, usando Google TTS como fallback');
+    if (!ELEVENLABS_API_KEY) {
+      console.error('API key ElevenLabs não configurada, usando Google TTS como fallback');
       // Fallback direto para Google TTS
       try {
         const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=pt-BR&q=${encodeURIComponent(text.substring(0, 200))}`;
@@ -168,84 +162,51 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Sistema de failover carregado com ${API_KEYS.length} API key(s)`);
+    console.log('Tentando gerar voz com ElevenLabs...');
 
-    // Função auxiliar para tentar gerar voz com uma API key
-    const tryGenerateWithKey = async (apiKey: string, keyIndex: number): Promise<ArrayBuffer | null> => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-      try {
-        console.log(`[Failover] Tentando API key #${keyIndex + 1}...`);
-        
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-          method: 'POST',
-          headers: {
-            'xi-api-key': apiKey,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text: text.substring(0, 5000),
-            model_id: 'eleven_multilingual_v2',
-            voice_settings: {
-              stability: 0.5,
-              similarity_boost: 0.8,
-            },
-          }),
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const audioData = await response.arrayBuffer();
-          if (audioData.byteLength > 0) {
-            console.log(`[Failover] ✅ Sucesso com API key #${keyIndex + 1} (${audioData.byteLength} bytes)`);
-            return audioData;
-          }
-        }
-
-        // Erros que devem tentar próxima key
-        if (response.status === 429) {
-          console.log(`[Failover] ⚠️ API key #${keyIndex + 1} - Rate limit (429)`);
-          return null;
-        }
-        
-        if (response.status === 402) {
-          console.log(`[Failover] ⚠️ API key #${keyIndex + 1} - Quota excedida (402)`);
-          return null;
-        }
-
-        if (response.status === 401) {
-          console.log(`[Failover] ⚠️ API key #${keyIndex + 1} - Não autorizada (401)`);
-          return null;
-        }
-
-        // Outros erros também tentam próxima key
-        const errorText = await response.text();
-        console.log(`[Failover] ⚠️ API key #${keyIndex + 1} - Erro ${response.status}: ${errorText}`);
-        return null;
-
-      } catch (error) {
-        clearTimeout(timeoutId);
-        console.error(`[Failover] ❌ API key #${keyIndex + 1} - Exceção:`, error instanceof Error ? error.message : error);
-        return null;
-      }
-    };
-
-    // Tentar cada API key sequencialmente
+    // Tentar gerar voz com ElevenLabs
     let audioData: ArrayBuffer | null = null;
-    
-    for (let i = 0; i < API_KEYS.length; i++) {
-      audioData = await tryGenerateWithKey(API_KEYS[i]!, i);
-      if (audioData) {
-        break; // Sucesso! Sair do loop
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+    try {
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: text.substring(0, 5000),
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.8,
+          },
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        audioData = await response.arrayBuffer();
+        if (audioData.byteLength > 0) {
+          console.log(`✅ ElevenLabs: Áudio gerado com sucesso (${audioData.byteLength} bytes)`);
+        }
+      } else {
+        const errorText = await response.text();
+        console.error(`❌ ElevenLabs falhou com status ${response.status}: ${errorText}`);
       }
+
+    } catch (error) {
+      clearTimeout(timeoutId);
+      console.error('❌ Erro ao chamar ElevenLabs:', error instanceof Error ? error.message : error);
     }
 
-    // Se todas as keys falharam, usar Google TTS como fallback
-    if (!audioData) {
-      console.log('[Failover] 🔄 Todas as API keys ElevenLabs falharam, usando Google TTS como fallback');
+    // Se ElevenLabs falhou, usar Google TTS como fallback
+    if (!audioData || audioData.byteLength === 0) {
+      console.log('🔄 ElevenLabs falhou, usando Google TTS como fallback');
       
       try {
         const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=pt-BR&q=${encodeURIComponent(text.substring(0, 200))}`;
@@ -261,11 +222,11 @@ serve(async (req) => {
         }
 
         audioData = await googleResponse.arrayBuffer();
-        console.log('[Failover] ✅ Google TTS funcionou como fallback');
+        console.log('✅ Google TTS funcionou como fallback');
         
       } catch (googleError) {
-        console.error('[Failover] ❌ Google TTS também falhou:', googleError);
-        throw new Error('Todas as API keys ElevenLabs falharam e Google TTS também não funcionou');
+        console.error('❌ Google TTS também falhou:', googleError);
+        throw new Error('ElevenLabs falhou e Google TTS também não funcionou');
       }
     }
 
