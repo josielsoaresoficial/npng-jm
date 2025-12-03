@@ -170,20 +170,20 @@ export const useVoiceRecognition = ({
 
   // Processar resultado final
   const processFinalResult = useCallback((transcript: string, confidence: number) => {
-    // NOVO: Verificar se VAD detectou voz humana
-    if (voiceActivity.isNoise && !voiceActivity.isVoiceDetected) {
-      console.log('🔇 Descartado pelo VAD: ruído detectado, não é voz humana');
+    // VAD check RELAXADO: só descartar se VAD tiver alta certeza que é ruído
+    if (voiceActivity.isActive && voiceActivity.isNoise && voiceActivity.confidence > 0.6) {
+      console.log('🔇 Descartado pelo VAD: ruído com alta certeza');
       return;
     }
 
-    // Verificar confiança do VAD
-    if (voiceActivity.confidence < 0.4 && voiceActivity.isActive) {
-      console.log('🔇 Descartado pelo VAD: confiança muito baixa -', voiceActivity.confidence);
-      return;
+    // Bypass VAD se confiança baixa - deixar filtros de texto decidir
+    // Reduzido threshold de 0.4 para 0.25
+    if (voiceActivity.isActive && voiceActivity.confidence < 0.25 && voiceActivity.confidence > 0) {
+      console.log('⚠️ VAD com baixa confiança, usando filtros de texto');
     }
 
-    // Filtro de confiança mínima do reconhecimento (60%)
-    if (confidence < 0.6) {
+    // Filtro de confiança mínima do reconhecimento RELAXADO (50% ao invés de 60%)
+    if (confidence < 0.5) {
       console.log('❌ Descartado: confiança baixa -', confidence, transcript);
       return;
     }
@@ -282,9 +282,9 @@ export const useVoiceRecognition = ({
       };
 
       recognition.onresult = (event: any) => {
-        // NOVO: Gate de voz - só processar se VAD detectou voz humana
-        if (voiceActivity.isActive && voiceActivity.isNoise && !voiceActivity.isVoiceDetected) {
-          console.log('🔇 Ignorando resultado - VAD detectou ruído');
+        // Gate de voz RELAXADO - só bloquear se VAD tiver CERTEZA que é ruído
+        if (voiceActivity.isActive && voiceActivity.isNoise && voiceActivity.confidence > 0.7) {
+          console.log('🔇 Ignorando resultado - VAD detectou ruído com alta certeza');
           return;
         }
 
@@ -322,9 +322,9 @@ export const useVoiceRecognition = ({
               return;
             }
 
-            // NOVO: Verificar VAD antes de processar interim
-            if (voiceActivity.isNoise && !voiceActivity.isVoiceDetected) {
-              console.log('🔇 Ignorando interim - VAD detectou ruído');
+            // VAD check RELAXADO para interim
+            if (voiceActivity.isActive && voiceActivity.isNoise && voiceActivity.confidence > 0.7) {
+              console.log('🔇 Ignorando interim - VAD detectou ruído com alta certeza');
               return;
             }
             

@@ -6,12 +6,12 @@ const HUMAN_VOICE_CONFIG = {
   minFrequency: 85,      // Limite inferior da voz masculina
   maxFrequency: 3400,    // Limite superior dos formantes
   
-  // Thresholds de detecção
-  energyThreshold: 0.015,    // Nível mínimo de energia para considerar som
-  voiceRatioThreshold: 0.35, // % mínima de energia na faixa de voz
+  // Thresholds de detecção - RELAXADOS para melhor sensibilidade
+  energyThreshold: 0.008,    // Reduzido de 0.015 para captar vozes mais baixas
+  voiceRatioThreshold: 0.25, // Reduzido de 0.35 para mais tolerância
   
   // Detecção de modulação (fala vs ruído constante)
-  modulationThreshold: 0.12, // Variação mínima de amplitude
+  modulationThreshold: 0.08, // Reduzido de 0.12 para captar modulações sutis
   
   // Janela de análise
   analysisInterval: 50,      // ms entre análises
@@ -169,11 +169,11 @@ export const useVoiceActivityDetection = ({
     const isInVoiceRange = frequencyPeak >= HUMAN_VOICE_CONFIG.minFrequency && 
                           frequencyPeak <= HUMAN_VOICE_CONFIG.maxFrequency;
     
-    // Verificar se é ruído (energia alta mas fora da faixa de voz ou sem modulação)
-    const isNoise = hasEnoughEnergy && (!hasVoiceRatio || !hasModulation || noiseEnergy > voiceEnergy);
+    // Verificar se é ruído - CORRIGIDO: só é ruído se energia de ruído for MUITO maior que voz (2x)
+    const isNoise = hasEnoughEnergy && !hasVoiceRatio && (noiseEnergy > voiceEnergy * 2);
     
-    // Voz detectada se tem energia, está na faixa correta, tem modulação e não é ruído
-    const isVoiceDetected = hasEnoughEnergy && hasVoiceRatio && hasModulation && isInVoiceRange && !isNoise;
+    // Voz detectada - RELAXADO: não exigir todas as condições simultaneamente
+    const isVoiceDetected = hasEnoughEnergy && (hasVoiceRatio || (hasModulation && isInVoiceRange)) && !isNoise;
     
     // Calcular confiança
     let confidence = 0;
