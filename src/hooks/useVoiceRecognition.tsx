@@ -116,13 +116,13 @@ export const useVoiceRecognition = ({
     }
   }, []);
 
-  // Verificar se o texto é provavelmente ruído
+  // Verificar se o texto é provavelmente ruído - RELAXADO
   const isLikelyNoise = useCallback((text: string): boolean => {
     const trimmed = text.trim().toLowerCase();
     const words = trimmed.split(/\s+/).filter(w => w.length > 0);
     
-    // Texto muito curto
-    if (trimmed.length < 3) return true;
+    // Texto muito curto - RELAXADO de 3 para 2
+    if (trimmed.length < 2) return true;
     
     // Todas as palavras são ruídos conhecidos
     const nonNoiseWords = words.filter(w => 
@@ -136,13 +136,13 @@ export const useVoiceRecognition = ({
     // Verificar padrão de eco
     if (hasEchoPattern(trimmed)) return true;
     
-    // Alta proporção de palavras de ruído
-    if (nonNoiseWords.length / words.length < 0.3) return true;
+    // Alta proporção de palavras de ruído - RELAXADO de 0.3 para 0.2
+    if (nonNoiseWords.length / words.length < 0.2) return true;
     
     return false;
   }, []);
 
-  // Validar se o conteúdo é válido (não é ruído)
+  // Validar se o conteúdo é válido (não é ruído) - RELAXADO
   const isValidContent = useCallback((text: string): boolean => {
     const trimmed = text.trim().toLowerCase();
     
@@ -152,10 +152,10 @@ export const useVoiceRecognition = ({
       return false;
     }
     
-    // Verificar se tem pelo menos uma palavra com 3+ caracteres
+    // Verificar se tem pelo menos uma palavra com 2+ caracteres (era 3)
     const words = trimmed.split(/\s+/);
     const hasValidWord = words.some(w => 
-      w.length >= 3 && 
+      w.length >= 2 && 
       !NOISE_PATTERNS.vocalNoises.has(w) &&
       !NOISE_PATTERNS.environmentalSounds.has(w)
     );
@@ -168,27 +168,29 @@ export const useVoiceRecognition = ({
     return true;
   }, [isLikelyNoise]);
 
-  // Processar resultado final
+  // Processar resultado final - VAD APENAS COMO CONSELHEIRO
   const processFinalResult = useCallback((transcript: string, confidence: number) => {
-    // VAD check RELAXADO: só descartar se VAD tiver alta certeza que é ruído
-    if (voiceActivity.isActive && voiceActivity.isNoise && voiceActivity.confidence > 0.6) {
-      console.log('🔇 Descartado pelo VAD: ruído com alta certeza');
-      return;
+    // Debug VAD state
+    console.log('📊 VAD State:', {
+      isActive: voiceActivity.isActive,
+      isNoise: voiceActivity.isNoise,
+      isVoiceDetected: voiceActivity.isVoiceDetected,
+      confidence: voiceActivity.confidence
+    });
+
+    // VAD COMO CONSELHEIRO - NÃO BLOQUEIA, apenas loga
+    if (voiceActivity.isActive && voiceActivity.isNoise && voiceActivity.confidence > 0.8) {
+      console.log('⚠️ VAD indica possível ruído (confidence:', voiceActivity.confidence, ') - verificando filtros de texto');
+      // NÃO retorna - deixa os filtros de texto decidir
     }
 
-    // Bypass VAD se confiança baixa - deixar filtros de texto decidir
-    // Reduzido threshold de 0.4 para 0.25
-    if (voiceActivity.isActive && voiceActivity.confidence < 0.25 && voiceActivity.confidence > 0) {
-      console.log('⚠️ VAD com baixa confiança, usando filtros de texto');
-    }
-
-    // Filtro de confiança mínima do reconhecimento RELAXADO (50% ao invés de 60%)
-    if (confidence < 0.5) {
-      console.log('❌ Descartado: confiança baixa -', confidence, transcript);
+    // Filtro de confiança mínima MUITO RELAXADO (30%)
+    if (confidence < 0.3) {
+      console.log('❌ Descartado: confiança muito baixa -', confidence, transcript);
       return;
     }
     
-    // Validar conteúdo
+    // Validar conteúdo - os filtros de texto são mais confiáveis
     if (!isValidContent(transcript)) {
       return;
     }
@@ -206,7 +208,7 @@ export const useVoiceRecognition = ({
       return;
     }
     
-    console.log('✅ Resultado final válido:', transcript, 'Confiança:', confidence, 'VAD:', voiceActivity.confidence);
+    console.log('✅ Resultado final válido:', transcript, 'Confiança:', confidence);
     clearSilenceTimer();
     processingFinalRef.current = true;
     lastProcessedTimeRef.current = now;
@@ -282,10 +284,9 @@ export const useVoiceRecognition = ({
       };
 
       recognition.onresult = (event: any) => {
-        // Gate de voz RELAXADO - só bloquear se VAD tiver CERTEZA que é ruído
-        if (voiceActivity.isActive && voiceActivity.isNoise && voiceActivity.confidence > 0.7) {
-          console.log('🔇 Ignorando resultado - VAD detectou ruído com alta certeza');
-          return;
+        // VAD NÃO BLOQUEIA MAIS - apenas loga para debug
+        if (voiceActivity.isActive && voiceActivity.isNoise) {
+          console.log('⚠️ VAD indica ruído, mas processando mesmo assim...');
         }
 
         clearSilenceTimer();
@@ -321,12 +322,6 @@ export const useVoiceRecognition = ({
               console.log('⏭️ Ignorando interim - resultado final já processado');
               return;
             }
-
-            // VAD check RELAXADO para interim
-            if (voiceActivity.isActive && voiceActivity.isNoise && voiceActivity.confidence > 0.7) {
-              console.log('🔇 Ignorando interim - VAD detectou ruído com alta certeza');
-              return;
-            }
             
             const currentInterim = interimTranscript.trim();
             const wordCount = currentInterim.split(' ').filter(w => w.length > 0).length;
@@ -334,7 +329,7 @@ export const useVoiceRecognition = ({
             // Só processar se tiver conteúdo significativo (2+ palavras ou 4+ caracteres)
             if (currentInterim && (wordCount >= 2 || currentInterim.length >= 4)) {
               console.log('⏱️ Processando por silêncio:', currentInterim);
-              processFinalResult(currentInterim, 0.7);
+              processFinalResult(currentInterim, 0.5);
             }
           }, silenceTimeout);
         }
