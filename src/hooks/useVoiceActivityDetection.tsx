@@ -62,6 +62,15 @@ export const useVoiceActivityDetection = ({
   const energyHistoryRef = useRef<number[]>([]);
   const wasVoiceDetectedRef = useRef(false);
   const noiseCountRef = useRef(0);
+  
+  // REFS ESTÁVEIS para callbacks - evita loops infinitos
+  const onVoiceStartRef = useRef(onVoiceStart);
+  const onVoiceEndRef = useRef(onVoiceEnd);
+  const onNoiseDetectedRef = useRef(onNoiseDetected);
+  
+  useEffect(() => { onVoiceStartRef.current = onVoiceStart; }, [onVoiceStart]);
+  useEffect(() => { onVoiceEndRef.current = onVoiceEnd; }, [onVoiceEnd]);
+  useEffect(() => { onNoiseDetectedRef.current = onNoiseDetected; }, [onNoiseDetected]);
 
   // Calcular energia em uma faixa de frequência específica
   const calculateBandEnergy = useCallback((
@@ -185,17 +194,17 @@ export const useVoiceActivityDetection = ({
       if (!isNoise) confidence += 0.1;
     }
 
-    // Callbacks para eventos
+    // Callbacks para eventos - usando refs estáveis
     if (isVoiceDetected && !wasVoiceDetectedRef.current) {
-      onVoiceStart?.();
+      onVoiceStartRef.current?.();
     } else if (!isVoiceDetected && wasVoiceDetectedRef.current) {
-      onVoiceEnd?.();
+      onVoiceEndRef.current?.();
     }
     
     if (isNoise) {
       noiseCountRef.current++;
       if (noiseCountRef.current >= 3) {
-        onNoiseDetected?.();
+        onNoiseDetectedRef.current?.();
         noiseCountRef.current = 0;
       }
     } else {
@@ -216,7 +225,7 @@ export const useVoiceActivityDetection = ({
 
     // Continuar análise
     animationFrameRef.current = requestAnimationFrame(analyzeAudio);
-  }, [calculateBandEnergy, calculateModulation, findFrequencyPeak, onVoiceStart, onVoiceEnd, onNoiseDetected]);
+  }, [calculateBandEnergy, calculateModulation, findFrequencyPeak]); // Removidas dependências de callbacks - usam refs
 
   // Iniciar VAD
   const start = useCallback(async () => {
@@ -290,18 +299,27 @@ export const useVoiceActivityDetection = ({
     console.log('🔇 VAD parado');
   }, []);
 
-  // Gerenciar lifecycle baseado em enabled
+  // Refs para funções estáveis
+  const startRef = useRef(start);
+  const stopRef = useRef(stop);
+  
+  useEffect(() => {
+    startRef.current = start;
+    stopRef.current = stop;
+  });
+
+  // Gerenciar lifecycle baseado em enabled - SEM deps de funções
   useEffect(() => {
     if (enabled) {
-      start();
+      startRef.current();
     } else {
-      stop();
+      stopRef.current();
     }
 
     return () => {
-      stop();
+      stopRef.current();
     };
-  }, [enabled, start, stop]);
+  }, [enabled]); // Apenas enabled como dependência
 
   return {
     ...state,
