@@ -444,28 +444,14 @@ export const useVoiceRecognition = ({
 
   // Iniciar/parar baseado em enabled
   useEffect(() => {
-    console.log('🔄 Effect enabled changed:', enabled, 'isSupported:', state.isSupported, 'isActive:', isActiveRef.current);
+    console.log('🔄 Effect enabled changed:', enabled, 'isSupported:', state.isSupported);
     
     if (enabled && state.isSupported) {
-      // Verificar suporte detalhado
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        console.error('❌ SpeechRecognition API não disponível');
-        setState(prev => ({ ...prev, status: 'unsupported', error: 'API de voz não disponível' }));
-        return;
-      }
-      
-      console.log('✅ SpeechRecognition disponível:', !!SpeechRecognition);
-      
-      // Delay maior para garantir que tudo está pronto
+      // Delay mínimo para garantir que tudo está pronto
       const timer = setTimeout(() => {
-        if (!isActiveRef.current) {
-          console.log('▶️ Auto-starting recognition...');
-          startRef.current();
-        } else {
-          console.log('⚠️ Recognition já ativo, pulando start');
-        }
-      }, 500);
+        console.log('▶️ Auto-starting recognition...');
+        startRef.current();
+      }, 300);
       
       return () => {
         clearTimeout(timer);
@@ -473,7 +459,6 @@ export const useVoiceRecognition = ({
         stopRef.current();
       };
     } else if (!enabled) {
-      console.log('⏹️ Disabled - stopping recognition');
       stopRef.current();
     }
   }, [enabled, state.isSupported]);
