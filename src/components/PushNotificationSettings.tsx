@@ -1,4 +1,4 @@
-import { Bell, BellOff, TestTube } from 'lucide-react';
+import { Bell, BellOff, TestTube, Smartphone, Apple } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,75 @@ export function PushNotificationSettings() {
     subscribe,
     unsubscribe,
     sendTestNotification,
+    iosInfo,
   } = usePushNotifications();
+
+  // iOS não instalado como PWA
+  if (iosInfo.isIOS && !iosInfo.isStandalone) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Apple className="h-5 w-5" />
+            Notificações Push
+          </CardTitle>
+          <CardDescription>
+            Adicione o app à tela inicial para receber notificações
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-2 text-orange-500">
+              <Smartphone className="h-5 w-5" />
+              <span className="font-medium">Instalação necessária</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              No iOS, as notificações push só funcionam quando o app está instalado na tela inicial.
+            </p>
+            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+              <li>Toque no botão de compartilhar (📤) no Safari</li>
+              <li>Role e selecione <strong>"Adicionar à Tela Inicial"</strong></li>
+              <li>Abra o app pela tela inicial</li>
+              <li>Volte aqui para ativar as notificações</li>
+            </ol>
+            {iosInfo.version && iosInfo.version < 16 && (
+              <div className="mt-3 p-2 bg-destructive/10 rounded text-xs text-destructive">
+                ⚠️ iOS {iosInfo.version} detectado. Notificações push requerem iOS 16.4 ou superior.
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // iOS versão incompatível
+  if (iosInfo.isIOS && iosInfo.version && iosInfo.version < 16) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BellOff className="h-5 w-5" />
+            Notificações Push
+          </CardTitle>
+          <CardDescription>
+            Versão do iOS não compatível
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 space-y-2">
+            <p className="text-sm text-destructive">
+              iOS {iosInfo.version} detectado
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Notificações push em PWA requerem iOS 16.4 ou superior. 
+              Atualize seu dispositivo para receber notificações.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!isSupported) {
     return (
@@ -127,6 +195,11 @@ export function PushNotificationSettings() {
           <p>
             🔒 Suas preferências são salvas de forma segura e você pode desativar a qualquer momento
           </p>
+          {iosInfo.isIOS && (
+            <p>
+              🍎 <strong>iOS:</strong> Notificações via APNs (requer iOS 16.4+)
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

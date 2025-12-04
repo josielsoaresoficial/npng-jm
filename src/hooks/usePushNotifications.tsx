@@ -8,21 +8,57 @@ interface PushSubscriptionData {
   auth: string;
 }
 
+interface IOSInfo {
+  isIOS: boolean;
+  isStandalone: boolean;
+  version: number | null;
+  isCompatible: boolean;
+}
+
+function getIOSInfo(): IOSInfo {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  
+  // Check if running as standalone PWA
+  const isStandalone = 
+    ('standalone' in window.navigator && (window.navigator as any).standalone === true) ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  
+  // Extract iOS version
+  let version: number | null = null;
+  const match = ua.match(/OS (\d+)_/);
+  if (match) {
+    version = parseInt(match[1], 10);
+  }
+  
+  // iOS 16.4+ required for push notifications
+  const isCompatible = !isIOS || (version !== null && version >= 16 && isStandalone);
+  
+  return { isIOS, isStandalone, version, isCompatible };
+}
+
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [loading, setLoading] = useState(false);
+  const [iosInfo, setIosInfo] = useState<IOSInfo>({ isIOS: false, isStandalone: false, version: null, isCompatible: true });
 
   useEffect(() => {
+    const ios = getIOSInfo();
+    setIosInfo(ios);
+    
     // Verificar se notificações são suportadas
     const supported = 'Notification' in window && 
                      'serviceWorker' in navigator && 
                      'PushManager' in window;
     
-    setIsSupported(supported);
+    // No iOS, só suportamos se for PWA standalone e versão 16.4+
+    const finalSupported = supported && ios.isCompatible;
     
-    if (supported) {
+    setIsSupported(finalSupported);
+    
+    if (finalSupported) {
       setPermission(Notification.permission);
       checkSubscription();
     }
@@ -209,5 +245,6 @@ export function usePushNotifications() {
     subscribe,
     unsubscribe,
     sendTestNotification,
+    iosInfo,
   };
 }
