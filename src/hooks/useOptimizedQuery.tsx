@@ -117,8 +117,8 @@ export const useOptimizedWeeklyProgress = () => {
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       sevenDaysAgo.setHours(0, 0, 0, 0);
 
-      // Consolidar queries em uma Promise.all para paralelização
-      const [workoutsRes, mealsRes] = await Promise.all([
+      // Consolidar queries em uma Promise.all para paralelização (incluindo perfil)
+      const [workoutsRes, mealsRes, profileRes] = await Promise.all([
         supabase
           .from('workout_history')
           .select('id, completed_at')
@@ -128,11 +128,17 @@ export const useOptimizedWeeklyProgress = () => {
           .from('meals')
           .select('total_calories, created_at')
           .eq('user_id', user?.id)
-          .gte('created_at', sevenDaysAgo.toISOString())
+          .gte('created_at', sevenDaysAgo.toISOString()),
+        supabase
+          .from('profiles')
+          .select('daily_calories_goal')
+          .eq('user_id', user?.id)
+          .maybeSingle()
       ]);
 
       const workouts = workoutsRes.data || [];
       const meals = mealsRes.data || [];
+      const caloriesGoal = profileRes.data?.daily_calories_goal || 2000;
 
       // Calcular dados
       const workoutsCompleted = workouts.length;
@@ -146,7 +152,7 @@ export const useOptimizedWeeklyProgress = () => {
       const days = Object.keys(dailyCalories);
       const calorieGoalPercentage = days.length > 0
         ? Math.round(days.reduce((acc, date) => 
-            acc + Math.min((dailyCalories[date] / 2200) * 100, 100), 0) / days.length)
+            acc + Math.min((dailyCalories[date] / caloriesGoal) * 100, 100), 0) / days.length)
         : 0;
 
       // Calcular dias consecutivos

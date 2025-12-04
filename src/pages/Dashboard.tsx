@@ -36,7 +36,12 @@ const Dashboard = () => {
     ? profile.name.trim().split(' ')[0].charAt(0).toUpperCase() + profile.name.trim().split(' ')[0].slice(1).toLowerCase()
     : 'Amigo';
 
+  // Metas do perfil do usuário com fallbacks
+  const caloriesGoal = profile?.daily_calories_goal || 2000;
   const proteinGoal = profile?.daily_protein_goal || 120;
+  const carbsGoal = profile?.daily_carbs_goal || 250;
+  const fatGoal = profile?.daily_fat_goal || 65;
+  
   const proteinPercentage = proteinGoal > 0 ? Math.round((nutritionData.protein / proteinGoal) * 100) : 0;
 
   return (
@@ -215,11 +220,11 @@ const Dashboard = () => {
             )}
           </GymCard>
 
-          {/* Nutrition Summary - carrega independente */}
+        {/* Nutrition Summary - carrega independente */}
           <GymCard 
             variant="nutrition"
             title="Resumo Nutricional"
-            description="Objetivo: 2.200 kcal"
+            description={`Objetivo: ${caloriesGoal.toLocaleString('pt-BR')} kcal`}
           >
             <div className="space-y-4">
               <div className="text-center">
@@ -230,8 +235,8 @@ const Dashboard = () => {
                 )}
                 <div className="text-sm text-muted-foreground">kcal consumidas</div>
                 {!loadingNutrition && (
-                  <div className={`text-xs mt-1 ${2200 - nutritionData.calories >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {Math.abs(Math.round(2200 - nutritionData.calories))} kcal {2200 - nutritionData.calories >= 0 ? 'restantes' : 'acima'}
+                  <div className={`text-xs mt-1 ${caloriesGoal - nutritionData.calories >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {Math.abs(Math.round(caloriesGoal - nutritionData.calories))} kcal {caloriesGoal - nutritionData.calories >= 0 ? 'restantes' : 'acima'}
                   </div>
                 )}
               </div>
@@ -240,25 +245,25 @@ const Dashboard = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Carboidratos</span>
-                    <span>{Math.round(nutritionData.carbs)}g / 220g</span>
+                    <span>{Math.round(nutritionData.carbs)}g / {carbsGoal}g</span>
                   </div>
-                  <Progress value={Math.min((nutritionData.carbs / 220) * 100, 100)} className="h-1" />
+                  <Progress value={Math.min((nutritionData.carbs / carbsGoal) * 100, 100)} className="h-1" />
                 </div>
                 
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Proteínas</span>
-                    <span>{Math.round(nutritionData.protein)}g / 120g</span>
+                    <span>{Math.round(nutritionData.protein)}g / {proteinGoal}g</span>
                   </div>
-                  <Progress value={Math.min((nutritionData.protein / 120) * 100, 100)} className="h-1" />
+                  <Progress value={Math.min((nutritionData.protein / proteinGoal) * 100, 100)} className="h-1" />
                 </div>
                 
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Gorduras</span>
-                    <span>{Math.round(nutritionData.fat)}g / 60g</span>
+                    <span>{Math.round(nutritionData.fat)}g / {fatGoal}g</span>
                   </div>
-                  <Progress value={Math.min((nutritionData.fat / 60) * 100, 100)} className="h-1" />
+                  <Progress value={Math.min((nutritionData.fat / fatGoal) * 100, 100)} className="h-1" />
                 </div>
               </div>
               
