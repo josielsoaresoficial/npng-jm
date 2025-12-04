@@ -326,15 +326,15 @@ const Progress = () => {
               <p className="text-sm sm:text-base text-muted-foreground">Acompanhe sua evolução</p>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide justify-center sm:justify-end">
-              <Button variant="outline" size="sm" className="flex-shrink-0 text-xs sm:text-sm" onClick={() => navigate("/workout-time")}>
+              <Button variant="outline" size="sm" className="flex-shrink-0 text-xs sm:text-sm" onClick={() => navigate("/stats/workout-time")}>
                 <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Tempo
               </Button>
-              <Button variant="outline" size="sm" className="flex-shrink-0 text-xs sm:text-sm" onClick={() => navigate("/calories-burned")}>
+              <Button variant="outline" size="sm" className="flex-shrink-0 text-xs sm:text-sm" onClick={() => navigate("/stats/calories-burned")}>
                 <Flame className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Calorias
               </Button>
-              <Button variant="outline" size="sm" className="flex-shrink-0 text-xs sm:text-sm" onClick={() => navigate("/protein-goal")}>
+              <Button variant="outline" size="sm" className="flex-shrink-0 text-xs sm:text-sm" onClick={() => navigate("/stats/protein-goal")}>
                 <Dumbbell className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Proteína
               </Button>
