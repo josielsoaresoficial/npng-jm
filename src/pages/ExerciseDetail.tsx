@@ -155,12 +155,12 @@ const ExerciseDetail = () => {
                   </div>
                   <p className="opacity-90">{exercise.description}</p>
                 </div>
-                <div className="relative bg-white/10 rounded-xl p-6">
+                <div className="relative bg-white/10 rounded-xl p-4">
                   {exercise.gif_url ? (
                     <img 
                       src={exercise.gif_url} 
                       alt={exercise.name}
-                      className="w-32 h-32 object-cover rounded-lg"
+                      className="w-full max-w-[200px] h-auto object-contain rounded-lg"
                     />
                   ) : (
                     <AnimatedExercise animation={exercise.name} size="large" />

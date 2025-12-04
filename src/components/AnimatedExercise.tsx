@@ -11,9 +11,9 @@ const AnimatedExercise: React.FC<AnimatedExerciseProps> = ({ animation, size = '
   const [loading, setLoading] = useState(true);
 
   const sizeClass = {
-    small: 'w-32 h-32',
-    medium: 'w-48 h-48',
-    large: 'w-64 h-64'
+    small: 'max-w-[150px] w-full',
+    medium: 'max-w-[220px] w-full',
+    large: 'max-w-[300px] w-full'
   };
 
   useEffect(() => {
@@ -108,7 +108,7 @@ const AnimatedExercise: React.FC<AnimatedExerciseProps> = ({ animation, size = '
   if (loading) {
     return (
       <div className="flex items-center justify-center">
-        <div className={`${sizeClass[size]} flex items-center justify-center bg-muted/50 rounded-lg`}>
+        <div className={`${sizeClass[size]} min-h-[120px] flex items-center justify-center bg-muted/50 rounded-lg`}>
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           </div>
@@ -123,10 +123,10 @@ const AnimatedExercise: React.FC<AnimatedExerciseProps> = ({ animation, size = '
         <img 
           src={gifUrl} 
           alt={animation}
-          className={`${sizeClass[size]} object-contain rounded-lg shadow-lg bg-muted/30`}
+          className={`${sizeClass[size]} h-auto object-contain rounded-lg shadow-lg bg-muted/30`}
         />
       ) : (
-        <div className={`${sizeClass[size]} flex items-center justify-center bg-muted/50 rounded-lg border-2 border-dashed border-muted-foreground/30`}>
+        <div className={`${sizeClass[size]} min-h-[120px] flex items-center justify-center bg-muted/50 rounded-lg border-2 border-dashed border-muted-foreground/30`}>
           <div className="text-center p-4">
             <p className="text-sm font-medium text-muted-foreground">GIF pendente</p>
             <p className="text-xs text-muted-foreground/70 mt-1">{animation}</p>
