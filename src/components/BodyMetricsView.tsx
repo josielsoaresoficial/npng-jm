@@ -187,10 +187,10 @@ export const BodyMetricsView = () => {
 
       {/* Tabs de Navegação */}
       <Tabs defaultValue="peso" className="w-full">
-        <TabsList className="w-full grid grid-cols-3">
-          <TabsTrigger value="peso">Peso</TabsTrigger>
-          <TabsTrigger value="medidas">Medidas</TabsTrigger>
-          <TabsTrigger value="avancado">Avançado</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-3 h-auto p-1">
+          <TabsTrigger value="peso" className="py-2.5 sm:py-3 text-xs sm:text-sm px-2 sm:px-4">Peso</TabsTrigger>
+          <TabsTrigger value="medidas" className="py-2.5 sm:py-3 text-xs sm:text-sm px-2 sm:px-4">Medidas</TabsTrigger>
+          <TabsTrigger value="avancado" className="py-2.5 sm:py-3 text-xs sm:text-sm px-2 sm:px-4">Avançado</TabsTrigger>
         </TabsList>
 
         <TabsContent value="peso" className="space-y-6 mt-6">
