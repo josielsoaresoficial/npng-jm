@@ -51,7 +51,7 @@ export function MuscleMap({ view, selectedMuscle, onMuscleSelect }: MuscleMapPro
           <img
             src={view === "front" ? bodyFront : bodyBack}
             alt={view === "front" ? "Vista frontal do corpo" : "Vista traseira do corpo"}
-            className="w-[280px] h-auto object-contain transition-opacity duration-300"
+            className="w-[85vw] max-w-[320px] sm:w-[280px] md:w-[320px] h-auto object-contain transition-opacity duration-300"
             style={{ maxHeight: "600px" }}
           />
         </div>

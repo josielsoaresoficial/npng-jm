@@ -408,7 +408,7 @@ export function WorkoutMuscleMap({ view, selectedMuscle, onMuscleSelect }: Worko
           <img
             src={view === "front" ? bodyFrontWorkout : bodyBackWorkout}
             alt={view === "front" ? "Vista frontal do corpo" : "Vista traseira do corpo"}
-            className="w-[200px] sm:w-[250px] md:w-[280px] h-auto object-contain transition-opacity duration-300"
+            className="w-[85vw] max-w-[320px] sm:w-[280px] md:w-[320px] h-auto object-contain transition-opacity duration-300"
             style={{ maxHeight: "600px" }}
           />
         </div>
