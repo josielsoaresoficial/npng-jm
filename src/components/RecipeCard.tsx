@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Trash2, Clock, Users, Share2, Copy, Check, Mail, MessageCircle, Twitter, Facebook, Send, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
+import { LiquidGlassWrapper } from '@/components/liquid-glass/LiquidGlassWrapper';
 import { FavoriteRecipe, RecipeCategory } from '@/hooks/useFavoriteRecipes';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -153,8 +154,8 @@ export const RecipeCard = ({ recipe, onDelete, onEdit }: RecipeCardProps) => {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader>
+    <LiquidGlassWrapper variant="nutrition" hoverable className="hover:shadow-lg transition-shadow">
+      <CardHeader className="bg-transparent">
         <div className="flex justify-between items-start gap-2">
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -361,6 +362,6 @@ export const RecipeCard = ({ recipe, onDelete, onEdit }: RecipeCardProps) => {
         onOpenChange={setIsEditDialogOpen}
         onSave={onEdit}
       />
-    </Card>
+    </LiquidGlassWrapper>
   );
 };

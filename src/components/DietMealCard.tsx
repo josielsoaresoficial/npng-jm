@@ -1,7 +1,7 @@
-import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Clock, Utensils } from "lucide-react";
 import { useState } from "react";
+import { LiquidGlassWrapper } from "@/components/liquid-glass/LiquidGlassWrapper";
 
 interface DietMealCardProps {
   meal: {
@@ -22,7 +22,7 @@ export const DietMealCard = ({ meal, onComplete }: DietMealCardProps) => {
   };
 
   return (
-    <Card className={`p-4 transition-all ${isCompleted ? 'opacity-60 bg-muted' : ''}`}>
+    <LiquidGlassWrapper variant="nutrition" className={`p-4 transition-all ${isCompleted ? 'opacity-60' : ''}`}>
       <div className="flex items-start gap-3">
         <Checkbox
           checked={isCompleted}
@@ -55,6 +55,6 @@ export const DietMealCard = ({ meal, onComplete }: DietMealCardProps) => {
           </div>
         </div>
       </div>
-    </Card>
+    </LiquidGlassWrapper>
   );
 };

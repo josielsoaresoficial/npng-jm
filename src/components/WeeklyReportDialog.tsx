@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/untyped";
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Minus, Calendar } from "lucide-react";
+import { LiquidGlassWrapper } from "@/components/liquid-glass/LiquidGlassWrapper";
 
 interface WeeklyReportDialogProps {
   open: boolean;
@@ -138,14 +139,14 @@ export function WeeklyReportDialog({ open, onOpenChange }: WeeklyReportDialogPro
           <div className="space-y-6">
             {/* Overview Cards */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-lg bg-gradient-nutrition-subtle">
+              <LiquidGlassWrapper variant="nutrition" className="p-4">
                 <div className="text-3xl font-bold text-secondary">{weeklyStats.mealsCount}</div>
                 <div className="text-sm text-muted-foreground">Refeições Registradas</div>
-              </div>
-              <div className="p-4 rounded-lg bg-gradient-nutrition-subtle">
+              </LiquidGlassWrapper>
+              <LiquidGlassWrapper variant="nutrition" className="p-4">
                 <div className="text-3xl font-bold text-secondary">{weeklyStats.daysWithMeals}/7</div>
                 <div className="text-sm text-muted-foreground">Dias Ativos</div>
-              </div>
+              </LiquidGlassWrapper>
             </div>
 
             {/* Calories */}
@@ -237,7 +238,7 @@ export function WeeklyReportDialog({ open, onOpenChange }: WeeklyReportDialogPro
             </div>
 
             {/* Summary Message */}
-            <div className="p-4 rounded-lg bg-muted">
+            <LiquidGlassWrapper variant="nutrition" className="p-4">
               <h3 className="font-semibold mb-2">Resumo da Semana</h3>
               <p className="text-sm text-muted-foreground">
                 {weeklyStats.daysWithMeals === 7 
@@ -246,7 +247,7 @@ export function WeeklyReportDialog({ open, onOpenChange }: WeeklyReportDialogPro
                 {" "}Você consumiu um total de {Math.round(weeklyStats.totalCalories)} kcal esta semana,
                 com uma média diária de {Math.round(weeklyStats.avgCalories)} kcal.
               </p>
-            </div>
+            </LiquidGlassWrapper>
 
             <Button 
               variant="nutrition" 
