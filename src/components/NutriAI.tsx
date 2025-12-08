@@ -77,19 +77,19 @@ const NutriAI = () => {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 z-50">
+    <div className="fixed bottom-4 right-3 z-50">
       <div className="relative">
         <motion.div
           className="relative cursor-pointer"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={handleCharacterClick}
         >
           <NutriCharacter
             isActive={isActive}
             isSpeaking={isAISpeaking || isProcessing}
             mood={mood}
-            size={140}
+            size={80}
           />
         </motion.div>
       </div>
