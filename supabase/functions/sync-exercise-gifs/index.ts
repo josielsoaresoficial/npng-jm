@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,9 +16,48 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // ========== ADMIN VERIFICATION ==========
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('❌ No authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Não autorizado - Token ausente' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('❌ Invalid token:', authError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Não autorizado - Token inválido' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if user has admin role
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (roleError || !roleData) {
+      console.error('❌ User is not admin:', user.id);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Acesso negado - Apenas administradores podem executar esta ação' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('✅ Admin verified:', user.email);
+    // ========== END ADMIN VERIFICATION ==========
+
     console.log('Iniciando sincronização de GIFs...');
 
-    // Listar todos os arquivos no bucket exercise-gifs
     const { data: files, error: listError } = await supabase
       .storage
       .from('exercise-gifs')
@@ -49,11 +88,8 @@ serve(async (req) => {
       );
     }
 
-    // Processar cada arquivo
     for (const file of files) {
       try {
-        // Extrair o exercise_id do nome do arquivo
-        // Formato esperado: {exercise_id}_{timestamp}.gif
         const parts = file.name.split('_');
         
         if (parts.length < 2 || !file.name.endsWith('.gif')) {
@@ -64,7 +100,6 @@ serve(async (req) => {
 
         const exerciseId = parts[0];
         
-        // Verificar se é um UUID válido
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(exerciseId)) {
           console.log(`ID inválido em: ${file.name}`);
@@ -72,7 +107,6 @@ serve(async (req) => {
           continue;
         }
 
-        // Verificar se o exercício existe e se já tem gif_url
         const { data: exercise, error: fetchError } = await supabase
           .from('exercise_library')
           .select('id, name, gif_url')
@@ -85,14 +119,12 @@ serve(async (req) => {
           continue;
         }
 
-        // Se já tem gif_url, pular
         if (exercise.gif_url) {
           console.log(`Exercício "${exercise.name}" já tem GIF`);
           stats.skipped++;
           continue;
         }
 
-        // Construir a URL pública do GIF
         const { data: urlData } = supabase
           .storage
           .from('exercise-gifs')
@@ -100,7 +132,6 @@ serve(async (req) => {
 
         const gifUrl = urlData.publicUrl;
 
-        // Atualizar o exercício com a URL do GIF
         const { error: updateError } = await supabase
           .from('exercise_library')
           .update({ gif_url: gifUrl })

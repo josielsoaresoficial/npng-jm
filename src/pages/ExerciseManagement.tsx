@@ -6,16 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Search, Filter, Database, Upload, Plus, Sparkles, RefreshCw, Trash2 } from 'lucide-react';
+import { Search, Filter, Database, Upload, Plus, Sparkles, RefreshCw, Trash2, ShieldAlert, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import ExerciseManagementCard from '@/components/ExerciseManagementCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BulkGifUploader } from '@/components/BulkGifUploader';
 import { GifValidationUploader } from '@/components/GifValidationUploader';
 import AddExerciseDialog from '@/components/AddExerciseDialog';
 import AutoGifUploader from '@/components/AutoGifUploader';
+import { useNavigate } from 'react-router-dom';
 
 interface Exercise {
   id: string;
@@ -35,6 +37,8 @@ interface Exercise {
 
 const ExerciseManagement: React.FC = () => {
   const { session } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
+  const navigate = useNavigate();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,6 +53,14 @@ const ExerciseManagement: React.FC = () => {
   const [rebuilding, setRebuilding] = useState(false);
   const [clearStorageConfirmOpen, setClearStorageConfirmOpen] = useState(false);
   const [clearingStorage, setClearingStorage] = useState(false);
+
+  // Redirect non-admin users
+  useEffect(() => {
+    if (!adminLoading && !isAdmin) {
+      toast.error('Acesso negado - Área restrita a administradores');
+      navigate('/workouts');
+    }
+  }, [adminLoading, isAdmin, navigate]);
 
   const muscleGroups = [
     { value: 'all', label: 'Todos os Grupos' },
@@ -152,12 +164,21 @@ const ExerciseManagement: React.FC = () => {
   };
 
   const handleClearStorage = async () => {
+    if (!session) {
+      toast.error('Você precisa estar logado');
+      return;
+    }
+
     try {
       setClearingStorage(true);
       setClearStorageConfirmOpen(false);
       toast.loading('Limpando storage...', { id: 'clear-storage' });
 
-      const { data, error } = await supabase.functions.invoke('clear-exercise-gifs');
+      const { data, error } = await supabase.functions.invoke('clear-exercise-gifs', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
       if (error) throw error;
 
@@ -169,7 +190,6 @@ const ExerciseManagement: React.FC = () => {
           { id: 'clear-storage', duration: 5000 }
         );
         
-        // Recarregar lista de exercícios
         fetchExercises();
       } else {
         throw new Error(result?.error || 'Erro desconhecido');
@@ -240,6 +260,39 @@ const ExerciseManagement: React.FC = () => {
   const exercisesWithGif = filteredExercises.filter(ex => ex.gif_url).length;
   const exercisesWithoutGif = filteredExercises.filter(ex => !ex.gif_url).length;
 
+  // Show loading or access denied while checking admin status
+  if (adminLoading) {
+    return (
+      <Layout>
+        <div className="container max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[50vh]">
+            <div className="text-center">
+              <Skeleton className="w-16 h-16 rounded-full mx-auto mb-4" />
+              <Skeleton className="w-48 h-6 mx-auto mb-2" />
+              <Skeleton className="w-32 h-4 mx-auto" />
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <Layout>
+        <div className="container max-w-7xl mx-auto px-4 py-8">
+          <Card className="p-12 text-center">
+            <ShieldAlert className="w-16 h-16 mx-auto mb-4 text-destructive" />
+            <h1 className="text-2xl font-bold mb-2">Acesso Negado</h1>
+            <p className="text-muted-foreground">
+              Esta área é restrita a administradores.
+            </p>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="container max-w-7xl mx-auto px-4 py-8">
@@ -251,7 +304,13 @@ const ExerciseManagement: React.FC = () => {
                 <Database className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Gerenciamento de Exercícios</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl font-bold">Gerenciamento de Exercícios</h1>
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-600 text-xs font-medium">
+                    <Shield className="w-3 h-3" />
+                    Admin
+                  </div>
+                </div>
                 <p className="text-muted-foreground">
                   Gerencie, edite e atualize a biblioteca de exercícios
                 </p>
