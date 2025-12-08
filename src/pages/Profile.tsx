@@ -20,6 +20,7 @@ import { TrialTimer } from "@/components/TrialTimer";
 import { useProfileStats } from "@/hooks/useProfileStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AchievementsSection } from "@/components/AchievementsSection";
+import { LiquidGlassWrapper } from "@/components/liquid-glass";
 
 const Profile = () => {
   // === INÍCIO DAS MODIFICAÇÕES ===
@@ -423,24 +424,24 @@ const Profile = () => {
 
         {/* Profile Stats */}
         <div className="grid grid-cols-3 gap-2 md:gap-4">
-          <div className="text-center p-3 md:p-4 rounded-lg glass-card">
+          <LiquidGlassWrapper variant="fitness" className="text-center p-3 md:p-4">
             <div className="text-xl md:text-2xl font-bold text-primary">
               {statsLoading ? <Skeleton className="h-7 w-12 mx-auto" /> : profileStats?.totalWorkouts || 0}
             </div>
             <div className="text-xs md:text-sm text-muted-foreground">Treinos</div>
-          </div>
-          <div className="text-center p-3 md:p-4 rounded-lg glass-card">
+          </LiquidGlassWrapper>
+          <LiquidGlassWrapper variant="nutrition" className="text-center p-3 md:p-4">
             <div className="text-xl md:text-2xl font-bold text-secondary">
               {statsLoading ? <Skeleton className="h-7 w-12 mx-auto" /> : profileStats?.totalMeals || 0}
             </div>
             <div className="text-xs md:text-sm text-muted-foreground">Refeições</div>
-          </div>
-          <div className="text-center p-3 md:p-4 rounded-lg glass-card">
+          </LiquidGlassWrapper>
+          <LiquidGlassWrapper variant="highlight" className="text-center p-3 md:p-4">
             <div className="text-xl md:text-2xl font-bold">
               {statsLoading ? <Skeleton className="h-7 w-12 mx-auto" /> : profileStats?.activeDays || 0}
             </div>
             <div className="text-xs md:text-sm text-muted-foreground break-words">Dias ativos</div>
-          </div>
+          </LiquidGlassWrapper>
         </div>
 
         {/* Personal Information */}
