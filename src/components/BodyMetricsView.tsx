@@ -22,6 +22,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Calendar, Image, Plus, Trash2, Target, TrendingDown, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { LiquidGlassWrapper } from "@/components/liquid-glass/LiquidGlassWrapper";
 
 interface BodyMetricHistory {
   id: string;
@@ -142,54 +143,52 @@ export const BodyMetricsView = () => {
       </div>
 
       {/* Card do Usuário/Peso Atual */}
-      <Card className="bg-muted/30">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-4">
-            {/* Silhueta do corpo */}
-            <div className="relative flex-shrink-0">
-              <div className="w-32 h-48 bg-gradient-to-b from-muted/50 to-muted rounded-xl overflow-hidden flex items-center justify-center">
-                <img
-                  src={bodyFront}
-                  alt="Silhueta corporal"
-                  className="w-auto h-full object-contain opacity-80"
-                />
-              </div>
-              <AddBodyPhotoDialog
-                onUpload={uploadPhoto}
-                trigger={
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="absolute bottom-2 right-2 h-8 w-8 bg-background/80"
-                  >
-                    <Image className="h-4 w-4 text-primary" />
-                  </Button>
-                }
+      <LiquidGlassWrapper variant="fitness" className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Silhueta do corpo */}
+          <div className="relative flex-shrink-0">
+            <div className="w-32 h-48 bg-gradient-to-b from-muted/50 to-muted rounded-xl overflow-hidden flex items-center justify-center">
+              <img
+                src={bodyFront}
+                alt="Silhueta corporal"
+                className="w-auto h-full object-contain opacity-80"
               />
             </div>
-
-            {/* Peso e Data */}
-            <div className="flex-1 space-y-2">
-              <div className="text-4xl font-bold text-primary">
-                {currentWeight.toFixed(1)} kg
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {latestDate}
-              </div>
-            </div>
-
-            {/* Botão Adicionar */}
-            <UpdateMetricsDialog 
-              onUpdate={handleUpdateMetrics}
+            <AddBodyPhotoDialog
+              onUpload={uploadPhoto}
               trigger={
-                <Button size="icon" variant="outline" className="h-20 w-20">
-                  <Plus className="h-6 w-6" />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="absolute bottom-2 right-2 h-8 w-8 bg-background/80"
+                >
+                  <Image className="h-4 w-4 text-primary" />
                 </Button>
               }
             />
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Peso e Data */}
+          <div className="flex-1 space-y-2">
+            <div className="text-4xl font-bold text-primary">
+              {currentWeight.toFixed(1)} kg
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {latestDate}
+            </div>
+          </div>
+
+          {/* Botão Adicionar */}
+          <UpdateMetricsDialog 
+            onUpdate={handleUpdateMetrics}
+            trigger={
+              <Button size="icon" variant="outline" className="h-20 w-20">
+                <Plus className="h-6 w-6" />
+              </Button>
+            }
+          />
+        </div>
+      </LiquidGlassWrapper>
 
       {/* Tabs de Navegação */}
       <Tabs defaultValue="peso" className="w-full">
@@ -201,163 +200,153 @@ export const BodyMetricsView = () => {
 
         <TabsContent value="peso" className="space-y-6 mt-6">
           {/* Módulo de Gráfico */}
-          <Card>
-            <CardContent className="pt-6">
-              {/* Indicadores */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-primary" />
-                    Atual
-                  </div>
-                  <div className="text-2xl font-bold text-primary">
-                    {currentWeight.toFixed(1)} <span className="text-sm">kg</span>
-                  </div>
+          <LiquidGlassWrapper variant="fitness" className="p-6">
+            {/* Indicadores */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-primary" />
+                  Atual
                 </div>
-                <div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-blue-500" />
-                    Meta
-                  </div>
-                  <div className="text-2xl font-bold text-blue-500">
-                    {goalWeight.toFixed(1)} <span className="text-sm">kg</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Diferença</div>
-                  <div className="text-2xl font-bold">
-                    {weightDifference > 0 ? '+' : ''}{weightDifference.toFixed(1)} <span className="text-sm">kg</span>
-                  </div>
+                <div className="text-2xl font-bold text-primary">
+                  {currentWeight.toFixed(1)} <span className="text-sm">kg</span>
                 </div>
               </div>
+              <div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  Meta
+                </div>
+                <div className="text-2xl font-bold text-blue-500">
+                  {goalWeight.toFixed(1)} <span className="text-sm">kg</span>
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Diferença</div>
+                <div className="text-2xl font-bold">
+                  {weightDifference > 0 ? '+' : ''}{weightDifference.toFixed(1)} <span className="text-sm">kg</span>
+                </div>
+              </div>
+            </div>
 
-              {/* Gráfico */}
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                    domain={[50, 130]}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px'
-                    }}
-                  />
-                  <ReferenceLine 
-                    y={goalWeight} 
-                    stroke="rgb(59, 130, 246)" 
-                    strokeDasharray="3 3"
-                    label={{ value: `${goalWeight} kg`, position: 'right', fill: 'rgb(59, 130, 246)' }}
-                  />
-                  <ReferenceLine 
-                    y={minIdealWeight} 
-                    stroke="hsl(var(--primary))" 
-                    strokeDasharray="3 3"
-                    strokeOpacity={0.3}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="weight" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--primary))', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            {/* Gráfico */}
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  domain={[50, 130]}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '6px'
+                  }}
+                />
+                <ReferenceLine 
+                  y={goalWeight} 
+                  stroke="rgb(59, 130, 246)" 
+                  strokeDasharray="3 3"
+                  label={{ value: `${goalWeight} kg`, position: 'right', fill: 'rgb(59, 130, 246)' }}
+                />
+                <ReferenceLine 
+                  y={minIdealWeight} 
+                  stroke="hsl(var(--primary))" 
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.3}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="weight" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={3}
+                  dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </LiquidGlassWrapper>
 
           {/* Módulo de Diagnóstico */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Diagnóstico</CardTitle>
-                <Button variant="link" className="text-primary">Ver mais</Button>
+          <LiquidGlassWrapper variant="highlight" className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Diagnóstico</h3>
+              <Button variant="link" className="text-primary">Ver mais</Button>
+            </div>
+            <div className="grid grid-cols-3 gap-6 text-center">
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">IMC</div>
+                <div className="text-3xl font-bold">{bmi.toFixed(2)}</div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-6 text-center">
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">IMC</div>
-                  <div className="text-3xl font-bold">{bmi.toFixed(2)}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">Gordura</div>
-                  <div className="text-3xl font-bold">
-                    {(bodyMetrics?.bodyFat || 18.83).toFixed(2)} <span className="text-lg">%</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">Peso Ideal</div>
-                  <div className="text-3xl font-bold">
-                    {minIdealWeight.toFixed(0)}-{maxIdealWeight.toFixed(0)} <span className="text-lg">kg</span>
-                  </div>
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Gordura</div>
+                <div className="text-3xl font-bold">
+                  {(bodyMetrics?.bodyFat || 18.83).toFixed(2)} <span className="text-lg">%</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Peso Ideal</div>
+                <div className="text-3xl font-bold">
+                  {minIdealWeight.toFixed(0)}-{maxIdealWeight.toFixed(0)} <span className="text-lg">kg</span>
+                </div>
+              </div>
+            </div>
+          </LiquidGlassWrapper>
 
           {/* Módulo de Histórico */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Histórico</CardTitle>
-                <UpdateMetricsDialog 
-                  onUpdate={handleUpdateMetrics}
-                  trigger={
-                    <Button className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      Adicionar
-                    </Button>
-                  }
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {history.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium">
-                          {format(new Date(entry.measurement_date), "d 'de' MMM 'de' yyyy", { locale: ptBR })}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {Number(entry.weight).toFixed(1)} kg
-                        </div>
+          <LiquidGlassWrapper variant="default" className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Histórico</h3>
+              <UpdateMetricsDialog 
+                onUpdate={handleUpdateMetrics}
+                trigger={
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar
+                  </Button>
+                }
+              />
+            </div>
+            <div className="space-y-3">
+              {history.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">
+                        {format(new Date(entry.measurement_date), "d 'de' MMM 'de' yyyy", { locale: ptBR })}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {Number(entry.weight).toFixed(1)} kg
                       </div>
                     </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => deleteEntry(entry.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
                   </div>
-                ))}
-                {history.length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    Nenhum registro ainda. Adicione sua primeira medição!
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => deleteEntry(entry.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              ))}
+              {history.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  Nenhum registro ainda. Adicione sua primeira medição!
+                </div>
+              )}
+            </div>
+          </LiquidGlassWrapper>
         </TabsContent>
 
         <TabsContent value="medidas" className="space-y-6 mt-6">
@@ -386,22 +375,20 @@ export const BodyMetricsView = () => {
           })()}
 
           {/* Galeria de Fotos */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Galeria de Fotos</CardTitle>
-                <AddBodyPhotoDialog
-                  onUpload={uploadPhoto}
-                  trigger={
-                    <Button className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      Adicionar Foto
-                    </Button>
-                  }
-                />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <LiquidGlassWrapper variant="default" className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Galeria de Fotos</h3>
+              <AddBodyPhotoDialog
+                onUpload={uploadPhoto}
+                trigger={
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar Foto
+                  </Button>
+                }
+              />
+            </div>
+            <div className="space-y-6">
               {photos.length > 0 ? (
                 <>
                   {/* Filtros por tipo */}
@@ -459,33 +446,30 @@ export const BodyMetricsView = () => {
                   <p className="text-sm mt-1">Tire fotos frontal, lateral e de costas regularmente</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </LiquidGlassWrapper>
 
           {/* Circunferências e Dobras Cutâneas */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Medidas Corporais</CardTitle>
-                <AddMeasurementsDialog
-                  onAdd={addMeasurement}
-                  trigger={
-                    <Button className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      Adicionar
-                    </Button>
-                  }
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {measurements.length > 0 ? (
-                <div className="space-y-3">
-                  {measurements.map((measurement) => (
-                    <div
-                      key={measurement.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
-                    >
+          <LiquidGlassWrapper variant="default" className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Medidas Corporais</h3>
+              <AddMeasurementsDialog
+                onAdd={addMeasurement}
+                trigger={
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar
+                  </Button>
+                }
+              />
+            </div>
+            {measurements.length > 0 ? (
+              <div className="space-y-3">
+                {measurements.map((measurement) => (
+                  <div
+                    key={measurement.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5"
+                  >
                       <div className="flex items-center gap-3">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
@@ -507,150 +491,142 @@ export const BodyMetricsView = () => {
                       </Button>
                     </div>
                   ))}
-                </div>
-              ) : (
-                <div className="text-center text-muted-foreground py-8">
-                  Nenhuma medida registrada ainda
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            ) : (
+              <div className="text-center text-muted-foreground py-8">
+                Nenhuma medida registrada ainda
+              </div>
+            )}
+          </LiquidGlassWrapper>
         </TabsContent>
 
         <TabsContent value="avancado" className="space-y-6 mt-6">
           {/* Meta de Peso */}
           {activeGoal && (
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <Target className="h-6 w-6 text-primary" />
+            <LiquidGlassWrapper variant="fitness" className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <Target className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold">Meta Ativa</h3>
+                    <Badge variant="outline">
+                      {activeGoal.goal_type === 'lose_weight' ? 'Perder Peso' : 
+                       activeGoal.goal_type === 'gain_weight' ? 'Ganhar Peso' : 
+                       activeGoal.goal_type === 'gain_muscle' ? 'Ganhar Massa' : 'Manter Peso'}
+                    </Badge>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold">Meta Ativa</h3>
-                      <Badge variant="outline">
-                        {activeGoal.goal_type === 'lose_weight' ? 'Perder Peso' : 
-                         activeGoal.goal_type === 'gain_weight' ? 'Ganhar Peso' : 
-                         activeGoal.goal_type === 'gain_muscle' ? 'Ganhar Massa' : 'Manter Peso'}
-                      </Badge>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Início</p>
+                      <p className="text-lg font-bold">{activeGoal.start_weight} kg</p>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Início</p>
-                        <p className="text-lg font-bold">{activeGoal.start_weight} kg</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Atual</p>
-                        <p className="text-lg font-bold text-primary">{activeGoal.current_weight} kg</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Meta</p>
-                        <p className="text-lg font-bold text-blue-500">{activeGoal.target_weight} kg</p>
-                      </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Atual</p>
+                      <p className="text-lg font-bold text-primary">{activeGoal.current_weight} kg</p>
                     </div>
-                    <div className="mt-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-muted-foreground">Progresso</span>
-                        <span className="text-sm font-medium">
-                          {Math.abs(activeGoal.current_weight - activeGoal.start_weight).toFixed(1)} / {Math.abs(activeGoal.target_weight - activeGoal.start_weight).toFixed(1)} kg
-                        </span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div
-                          className="bg-primary h-2 rounded-full transition-all"
-                          style={{
-                            width: `${Math.min(100, (Math.abs(activeGoal.current_weight - activeGoal.start_weight) / Math.abs(activeGoal.target_weight - activeGoal.start_weight)) * 100)}%`
-                          }}
-                        />
-                      </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Meta</p>
+                      <p className="text-lg font-bold text-blue-500">{activeGoal.target_weight} kg</p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-muted-foreground">Progresso</span>
+                      <span className="text-sm font-medium">
+                        {Math.abs(activeGoal.current_weight - activeGoal.start_weight).toFixed(1)} / {Math.abs(activeGoal.target_weight - activeGoal.start_weight).toFixed(1)} kg
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all"
+                        style={{
+                          width: `${Math.min(100, (Math.abs(activeGoal.current_weight - activeGoal.start_weight) / Math.abs(activeGoal.target_weight - activeGoal.start_weight)) * 100)}%`
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </LiquidGlassWrapper>
           )}
 
           {!activeGoal && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center py-8">
-                  <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="font-semibold mb-2">Defina sua Meta de Peso</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Crie uma meta personalizada e receba alertas quando atingir marcos importantes
-                  </p>
-                  <SetWeightGoalDialog
-                    currentWeight={currentWeight}
-                    onCreate={createGoal}
-                    trigger={
-                      <Button className="gap-2">
-                        <Target className="h-4 w-4" />
-                        Criar Meta
-                      </Button>
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Métricas Avançadas */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Métricas Avançadas</CardTitle>
-                <AddAdvancedMetricsDialog
-                  onAdd={addMetric}
+            <LiquidGlassWrapper variant="default" className="p-6">
+              <div className="text-center py-8">
+                <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="font-semibold mb-2">Defina sua Meta de Peso</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Crie uma meta personalizada e receba alertas quando atingir marcos importantes
+                </p>
+                <SetWeightGoalDialog
+                  currentWeight={currentWeight}
+                  onCreate={createGoal}
                   trigger={
                     <Button className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      Adicionar
+                      <Target className="h-4 w-4" />
+                      Criar Meta
                     </Button>
                   }
                 />
               </div>
-            </CardHeader>
-            <CardContent>
-              {metrics.length > 0 ? (
-                <div className="space-y-4">
-                  {metrics.slice(0, 1).map((metric) => (
-                    <div key={metric.id}>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                        {metric.basal_metabolic_rate && (
-                          <div className="text-center p-4 rounded-lg bg-muted/30">
-                            <p className="text-sm text-muted-foreground mb-1">TMB</p>
-                            <p className="text-2xl font-bold">{metric.basal_metabolic_rate}</p>
-                            <p className="text-xs text-muted-foreground">kcal/dia</p>
-                          </div>
-                        )}
-                        {metric.body_water_percentage && (
-                          <div className="text-center p-4 rounded-lg bg-muted/30">
-                            <p className="text-sm text-muted-foreground mb-1">Água Corporal</p>
-                            <p className="text-2xl font-bold">{metric.body_water_percentage}%</p>
-                          </div>
-                        )}
-                        {metric.bone_mass && (
-                          <div className="text-center p-4 rounded-lg bg-muted/30">
-                            <p className="text-sm text-muted-foreground mb-1">Massa Óssea</p>
-                            <p className="text-2xl font-bold">{metric.bone_mass}</p>
-                            <p className="text-xs text-muted-foreground">kg</p>
-                          </div>
-                        )}
-                        {metric.visceral_fat && (
-                          <div className="text-center p-4 rounded-lg bg-muted/30">
-                            <p className="text-sm text-muted-foreground mb-1">Gordura Visceral</p>
-                            <p className="text-2xl font-bold">{metric.visceral_fat}</p>
-                            <p className="text-xs text-muted-foreground">nível</p>
-                          </div>
-                        )}
-                        {metric.metabolic_age && (
-                          <div className="text-center p-4 rounded-lg bg-muted/30">
-                            <p className="text-sm text-muted-foreground mb-1">Idade Metabólica</p>
-                            <p className="text-2xl font-bold">{metric.metabolic_age}</p>
-                            <p className="text-xs text-muted-foreground">anos</p>
-                          </div>
-                        )}
+            </LiquidGlassWrapper>
+          )}
+
+          {/* Métricas Avançadas */}
+          <LiquidGlassWrapper variant="highlight" className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Métricas Avançadas</h3>
+              <AddAdvancedMetricsDialog
+                onAdd={addMetric}
+                trigger={
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar
+                  </Button>
+                }
+              />
+            </div>
+            {metrics.length > 0 ? (
+              <div className="space-y-4">
+                {metrics.slice(0, 1).map((metric) => (
+                  <div key={metric.id}>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                      {metric.basal_metabolic_rate && (
+                        <div className="text-center p-4 rounded-lg bg-white/5 dark:bg-white/5">
+                          <p className="text-sm text-muted-foreground mb-1">TMB</p>
+                          <p className="text-2xl font-bold">{metric.basal_metabolic_rate}</p>
+                          <p className="text-xs text-muted-foreground">kcal/dia</p>
+                        </div>
+                      )}
+                      {metric.body_water_percentage && (
+                        <div className="text-center p-4 rounded-lg bg-white/5 dark:bg-white/5">
+                          <p className="text-sm text-muted-foreground mb-1">Água Corporal</p>
+                          <p className="text-2xl font-bold">{metric.body_water_percentage}%</p>
+                        </div>
+                      )}
+                      {metric.bone_mass && (
+                        <div className="text-center p-4 rounded-lg bg-white/5 dark:bg-white/5">
+                          <p className="text-sm text-muted-foreground mb-1">Massa Óssea</p>
+                          <p className="text-2xl font-bold">{metric.bone_mass}</p>
+                          <p className="text-xs text-muted-foreground">kg</p>
+                        </div>
+                      )}
+                      {metric.visceral_fat && (
+                        <div className="text-center p-4 rounded-lg bg-white/5 dark:bg-white/5">
+                          <p className="text-sm text-muted-foreground mb-1">Gordura Visceral</p>
+                          <p className="text-2xl font-bold">{metric.visceral_fat}</p>
+                          <p className="text-xs text-muted-foreground">nível</p>
+                        </div>
+                      )}
+                      {metric.metabolic_age && (
+                        <div className="text-center p-4 rounded-lg bg-white/5 dark:bg-white/5">
+                          <p className="text-sm text-muted-foreground mb-1">Idade Metabólica</p>
+                          <p className="text-2xl font-bold">{metric.metabolic_age}</p>
+                          <p className="text-xs text-muted-foreground">anos</p>
+                        </div>
+                      )}
                       </div>
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>{format(new Date(metric.measurement_date), "d 'de' MMM 'de' yyyy", { locale: ptBR })}</span>
@@ -670,8 +646,7 @@ export const BodyMetricsView = () => {
                   Nenhuma métrica avançada registrada ainda
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </LiquidGlassWrapper>
         </TabsContent>
       </Tabs>
     </div>
