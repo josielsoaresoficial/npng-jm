@@ -114,6 +114,12 @@ export function WorkoutCard({
     const nameLower = workoutName.toLowerCase();
     
     // Primeiro, verificar por palavras-chave no nome do treino
+    if (nameLower.includes('full body') || nameLower.includes('corpo todo') || nameLower.includes('total body')) {
+      return workoutFreeweights;
+    }
+    if (nameLower.includes('força') || nameLower.includes('forca') || nameLower.includes('strength')) {
+      return workoutChestLegs;
+    }
     if (nameLower.includes('peitoral') || nameLower.includes('peito') || nameLower.includes('chest')) {
       return workoutChestLegs;
     }
