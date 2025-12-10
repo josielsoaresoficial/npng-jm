@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.promote-admin-by-email]
 verify_jwt = false
+
+[functions.send-confirmation-email]
+verify_jwt = false
