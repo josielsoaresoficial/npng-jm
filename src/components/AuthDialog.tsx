@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,6 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
-
-// hCaptcha Site Key - obtido do dashboard hCaptcha
-const HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"; // Substitua pela sua Site Key real
 
 const authSchema = z.object({
   email: z.string()
@@ -39,16 +35,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [loading, setLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const captchaRef = useRef<HCaptcha>(null);
-
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
-  };
-
-  const handleCaptchaExpire = () => {
-    setCaptchaToken(null);
-  };
 
   const handleGoogleLogin = async () => {
     try {
@@ -116,12 +102,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       }
     }
 
-    // Verificar captcha
-    if (!captchaToken) {
-      toast.error("Por favor, complete o captcha");
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -129,9 +109,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         const { error, data } = await supabase.auth.signInWithPassword({
           email,
           password,
-          options: {
-            captchaToken,
-          },
         });
 
         if (error) {
@@ -180,7 +157,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-            captchaToken,
           },
         });
 
@@ -231,9 +207,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       toast.error("Erro ao processar autenticação");
     } finally {
       setLoading(false);
-      // Reset captcha após tentativa
-      setCaptchaToken(null);
-      captchaRef.current?.resetCaptcha();
     }
   };
 
@@ -332,21 +305,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
           </div>
 
-          {/* hCaptcha */}
-          <div className="flex justify-center">
-            <HCaptcha
-              ref={captchaRef}
-              sitekey={HCAPTCHA_SITE_KEY}
-              onVerify={handleCaptchaVerify}
-              onExpire={handleCaptchaExpire}
-              theme="dark"
-            />
-          </div>
 
           <Button 
             type="submit" 
             className="w-full gradient-hero hover:opacity-90 transition-smooth"
-            disabled={loading || isGoogleLoading || !captchaToken}
+            disabled={loading || isGoogleLoading}
           >
             {loading ? (
               <>
