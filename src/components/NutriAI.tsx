@@ -4,7 +4,6 @@ import NutriCharacter, { CharacterMood } from './NutriCharacter';
 import { useChat } from '@/hooks/useChat';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { toast } from 'sonner';
-import logger from '@/lib/logger';
 
 const NutriAI = () => {
   const { messages, sendMessage, startConversation, isProcessing, currentMood, isAISpeaking } = useChat();
@@ -15,20 +14,20 @@ const NutriAI = () => {
   const voiceRecognition = useVoiceRecognition({
     enabled: isActive && !isAISpeaking, // Automaticamente controla start/stop
     onResult: (text) => {
-      logger.log('🎤 NutriAI recebeu texto:', text);
+      console.log('🎤 NutriAI recebeu texto:', text);
       if (text && text.trim().length > 0) {
         handleUserMessage(text);
       }
     },
     onError: (error) => {
-      logger.error('❌ Erro voz:', error);
+      console.error('❌ Erro voz:', error);
       toast.error('Erro no reconhecimento de voz: ' + error);
     }
   });
 
   // Debug state
   useEffect(() => {
-    logger.debug('🤖 NutriAI State:', { 
+    console.log('🤖 NutriAI State:', { 
       isActive, 
       isAISpeaking, 
       voiceStatus: voiceRecognition.status,

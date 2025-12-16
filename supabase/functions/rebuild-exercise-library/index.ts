@@ -16,46 +16,6 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // ========== ADMIN VERIFICATION ==========
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('❌ No authorization header');
-      return new Response(
-        JSON.stringify({ success: false, error: 'Não autorizado - Token ausente' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      console.error('❌ Invalid token:', authError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Não autorizado - Token inválido' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if user has admin role
-    const { data: roleData, error: roleError } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-
-    if (roleError || !roleData) {
-      console.error('❌ User is not admin:', user.id);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Acesso negado - Apenas administradores podem executar esta ação' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('✅ Admin verified:', user.email);
-    // ========== END ADMIN VERIFICATION ==========
-
     console.log('🔄 Starting exercise library rebuild...');
 
     // Step 1: Delete all existing exercises
@@ -77,7 +37,7 @@ serve(async (req) => {
     
     let allFiles: any[] = [];
     let offset = 0;
-    const limit = 1000;
+    const limit = 1000; // Maximum per request
     
     while (true) {
       const { data: files, error: listError } = await supabase.storage
@@ -98,7 +58,7 @@ serve(async (req) => {
       allFiles = [...allFiles, ...files];
       console.log(`📥 Fetched ${files.length} files (total: ${allFiles.length})`);
       
-      if (files.length < limit) break;
+      if (files.length < limit) break; // Last page
       offset += limit;
     }
 
@@ -125,12 +85,14 @@ serve(async (req) => {
         const exerciseName = extractExerciseName(file.name);
         const muscleGroup = detectMuscleGroup(file.name);
         
+        // Get public URL for the GIF
         const { data: urlData } = supabase.storage
           .from('exercise-gifs')
           .getPublicUrl(file.name);
         
         const gifUrl = urlData.publicUrl;
 
+        // Insert new exercise
         const { error: insertError } = await supabase
           .from('exercise_library')
           .insert({
@@ -197,10 +159,17 @@ serve(async (req) => {
   }
 });
 
+/**
+ * Extracts exercise name from filename
+ * Example: "Supino_Reto_Barra.gif" -> "Supino_Reto_Barra"
+ */
 function extractExerciseName(filename: string): string {
   return filename.replace(/\.(gif|png|jpg)$/i, '').trim();
 }
 
+/**
+ * Detects muscle group based on keywords in filename
+ */
 function detectMuscleGroup(filename: string): string {
   const lower = filename.toLowerCase();
   

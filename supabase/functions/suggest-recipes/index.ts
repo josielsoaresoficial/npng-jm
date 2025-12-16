@@ -1,47 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Verify user has premium access
-async function checkPremiumAccess(userId: string): Promise<{ hasAccess: boolean; reason?: string }> {
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('is_premium, trial_expired, trial_started_at')
-      .eq('user_id', userId)
-      .single();
-
-    if (error || !profile) {
-      return { hasAccess: false, reason: 'Profile not found' };
-    }
-
-    if (profile.is_premium) {
-      return { hasAccess: true };
-    }
-
-    if (profile.trial_started_at && !profile.trial_expired) {
-      const trialStart = new Date(profile.trial_started_at);
-      const now = new Date();
-      const hoursSinceStart = (now.getTime() - trialStart.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursSinceStart <= 24) {
-        return { hasAccess: true };
-      }
-    }
-
-    return { hasAccess: false, reason: 'Premium subscription required' };
-  } catch (err) {
-    return { hasAccess: false, reason: 'Error verifying access' };
-  }
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -49,38 +11,6 @@ serve(async (req) => {
   }
 
   try {
-    // Auth verification
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Authorization required' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Check premium access
-    const { hasAccess, reason } = await checkPremiumAccess(user.id);
-    if (!hasAccess) {
-      return new Response(JSON.stringify({ 
-        error: 'Premium access required',
-        message: reason 
-      }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const { fitnessGoal, dailyCalories, dailyProtein, dailyCarbs, dailyFat } = await req.json();
 
     const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
@@ -171,22 +101,30 @@ RETORNE UM JSON VÁLIDO com este formato EXATO:
     }
 
     const data = await response.json();
+    console.log('Resposta completa da API:', JSON.stringify(data, null, 2));
 
+    // Check if there are candidates
     if (!data.candidates || data.candidates.length === 0) {
+      console.error('Nenhum candidato na resposta:', data);
       throw new Error('API não retornou candidatos. Possível bloqueio de segurança ou erro na API.');
     }
 
     const candidate = data.candidates[0];
+    console.log('Candidate:', JSON.stringify(candidate, null, 2));
 
+    // Check for safety blocks or finish reason
     if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+      console.error('Finish reason:', candidate.finishReason);
       throw new Error(`Geração bloqueada: ${candidate.finishReason}`);
     }
 
     const content = candidate.content?.parts?.[0]?.text;
     if (!content) {
-      throw new Error('Nenhuma receita gerada.');
+      console.error('Conteúdo vazio. Estrutura do candidate:', JSON.stringify(candidate, null, 2));
+      throw new Error('Nenhuma receita gerada. Verifique os logs para detalhes.');
     }
 
+    console.log('Content recebido:', content.substring(0, 200));
     const recipes = JSON.parse(content).recipes;
 
     return new Response(
@@ -195,6 +133,7 @@ RETORNE UM JSON VÁLIDO com este formato EXATO:
     );
 
   } catch (error: any) {
+    console.error('Erro em suggest-recipes:', error);
     return new Response(
       JSON.stringify({ error: error.message || 'Erro ao gerar receitas' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

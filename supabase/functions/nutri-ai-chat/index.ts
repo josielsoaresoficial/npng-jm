@@ -1,52 +1,12 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Verify user has premium access (is_premium = true OR trial not expired)
-async function checkPremiumAccess(userId: string): Promise<{ hasAccess: boolean; reason?: string }> {
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('is_premium, trial_expired, trial_started_at')
-      .eq('user_id', userId)
-      .single();
-
-    if (error || !profile) {
-      return { hasAccess: false, reason: 'Profile not found' };
-    }
-
-    // Premium users always have access
-    if (profile.is_premium) {
-      return { hasAccess: true };
-    }
-
-    // Check if trial is still valid
-    if (profile.trial_started_at && !profile.trial_expired) {
-      const trialStart = new Date(profile.trial_started_at);
-      const now = new Date();
-      const hoursSinceStart = (now.getTime() - trialStart.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursSinceStart <= 24) {
-        return { hasAccess: true };
-      }
-    }
-
-    return { hasAccess: false, reason: 'Premium subscription required' };
-  } catch (err) {
-    console.error('Error checking premium status:', err);
-    return { hasAccess: false, reason: 'Error verifying access' };
-  }
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -54,39 +14,9 @@ serve(async (req) => {
   }
 
   try {
-    // Extract user ID from JWT
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Authorization required' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Check premium access
-    const { hasAccess, reason } = await checkPremiumAccess(user.id);
-    if (!hasAccess) {
-      return new Response(JSON.stringify({ 
-        error: 'Premium access required',
-        message: reason 
-      }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const { messages, userName, intent, userProfile } = await req.json();
+
+    console.log('Recebendo requisição NutriAI:', { userName, intent, messagesCount: messages.length, hasProfile: !!userProfile });
 
     // Construir contexto adicional baseado na intenção e perfil
     let contextPrompt = '';
@@ -202,16 +132,20 @@ ESTILO:
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('Erro na API Lovable AI:', errorData);
       throw new Error(`Lovable AI error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
     const generatedText = data.choices[0].message.content;
 
+    console.log('Resposta gerada com sucesso');
+
     return new Response(JSON.stringify({ response: generatedText }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    console.error('Erro em nutri-ai-chat:', error);
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : 'Unknown error',
       fallback: 'Desculpe, tive um problema técnico. Pode tentar novamente?'

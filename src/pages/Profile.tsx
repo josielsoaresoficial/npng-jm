@@ -6,10 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Settings, Target, Bell, Crown, Smartphone, Globe, Shield, Download, Lock, Trash2, Database, Hourglass, LayoutDashboard } from "lucide-react";
+import { User, Settings, Target, Bell, Crown, Smartphone, Globe, Shield, Download, Lock, Trash2, Database, Hourglass } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { EditableAvatar } from "@/components/EditableAvatar";
 import { supabase } from "@/integrations/supabase/untyped";
 import { useToast } from "@/hooks/use-toast";
@@ -46,7 +45,6 @@ const Profile = () => {
   }
 
   const { user, signOut } = useAuth();
-  const { isAdmin } = useIsAdmin();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isPremium } = useTrialStatus();
@@ -707,58 +705,33 @@ const Profile = () => {
           </div>
         </GymCard>
 
-        {/* Admin Tools - Only visible to admins */}
-        {isAdmin && (
-          <GymCard
-            title="Ferramentas Administrativas"
-            description="Gerencie conteúdo do aplicativo"
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-3 p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-                <div className="flex items-center gap-3 flex-1">
-                  <LayoutDashboard className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <div>
-                    <div className="font-medium flex items-center gap-2">
-                      Painel Administrativo
-                      <Badge className="bg-green-500/20 text-green-600 text-xs">Admin</Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Estatísticas de uso e gerenciamento geral
-                    </div>
+        {/* Admin Tools */}
+        <GymCard
+          title="Ferramentas Administrativas"
+          description="Gerencie conteúdo do aplicativo"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3 p-4 bg-muted/30 rounded-lg">
+              <div className="flex items-center gap-3 flex-1">
+                <Database className="w-5 h-5 text-primary flex-shrink-0" />
+                <div>
+                  <div className="font-medium">Biblioteca de Exercícios</div>
+                  <div className="text-sm text-muted-foreground">
+                    Visualize, edite e substitua GIFs dos exercícios
                   </div>
                 </div>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/admin')}
-                  className="flex-shrink-0 border-green-500/30 hover:bg-green-500/10"
-                >
-                  Abrir Painel
-                </Button>
               </div>
-              
-              <div className="flex items-center justify-between gap-3 p-4 bg-muted/30 rounded-lg">
-                <div className="flex items-center gap-3 flex-1">
-                  <Database className="w-5 h-5 text-primary flex-shrink-0" />
-                  <div>
-                    <div className="font-medium">Biblioteca de Exercícios</div>
-                    <div className="text-sm text-muted-foreground">
-                      Visualize, edite e substitua GIFs dos exercícios
-                    </div>
-                  </div>
-                </div>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/exercise-management')}
-                  className="flex-shrink-0"
-                >
-                  Gerenciar
-                </Button>
-              </div>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/exercise-management')}
+                className="flex-shrink-0"
+              >
+                Gerenciar
+              </Button>
             </div>
-          </GymCard>
-        )}
+          </div>
+        </GymCard>
 
         {/* App Info */}
         <div className="text-center text-sm text-muted-foreground space-y-2">

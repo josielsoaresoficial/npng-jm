@@ -6,6 +6,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -21,46 +22,6 @@ Deno.serve(async (req) => {
         persistSession: false,
       },
     });
-
-    // ========== ADMIN VERIFICATION ==========
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('❌ No authorization header');
-      return new Response(
-        JSON.stringify({ success: false, error: 'Não autorizado - Token ausente' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      console.error('❌ Invalid token:', authError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Não autorizado - Token inválido' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if user has admin role
-    const { data: roleData, error: roleError } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-
-    if (roleError || !roleData) {
-      console.error('❌ User is not admin:', user.id);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Acesso negado - Apenas administradores podem executar esta ação' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('✅ Admin verified:', user.email);
-    // ========== END ADMIN VERIFICATION ==========
 
     // Step 1: Delete all exercises from database
     console.log('🗄️ Deleting all exercises from database...');

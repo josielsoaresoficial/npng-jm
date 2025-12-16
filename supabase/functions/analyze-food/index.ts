@@ -1,47 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Verify user has premium access
-async function checkPremiumAccess(userId: string): Promise<{ hasAccess: boolean; reason?: string }> {
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('is_premium, trial_expired, trial_started_at')
-      .eq('user_id', userId)
-      .single();
-
-    if (error || !profile) {
-      return { hasAccess: false, reason: 'Profile not found' };
-    }
-
-    if (profile.is_premium) {
-      return { hasAccess: true };
-    }
-
-    if (profile.trial_started_at && !profile.trial_expired) {
-      const trialStart = new Date(profile.trial_started_at);
-      const now = new Date();
-      const hoursSinceStart = (now.getTime() - trialStart.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursSinceStart <= 24) {
-        return { hasAccess: true };
-      }
-    }
-
-    return { hasAccess: false, reason: 'Premium subscription required' };
-  } catch (err) {
-    return { hasAccess: false, reason: 'Error verifying access' };
-  }
-}
 
 // Banco de dados nutricional expandido (valores por 100g)
 const nutritionDatabase: Record<string, any> = {
@@ -390,38 +352,6 @@ serve(async (req) => {
   }
 
   try {
-    // Auth verification for premium check
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Authorization required' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Check premium access
-    const { hasAccess, reason } = await checkPremiumAccess(user.id);
-    if (!hasAccess) {
-      return new Response(JSON.stringify({ 
-        error: 'Premium access required',
-        message: reason 
-      }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const { imageData, imageBase64 } = await req.json();
     const image = imageData || imageBase64;
     
@@ -434,19 +364,44 @@ serve(async (req) => {
 
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!GOOGLE_AI_API_KEY) {
+      console.error("GOOGLE_AI_API_KEY não configurada");
       return new Response(
         JSON.stringify({ error: "Configuração de IA não disponível" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Buscar alimentos personalizados do usuário (user already verified above)
+    // Buscar alimentos personalizados do usuário
+    const authHeader = req.headers.get('Authorization');
     let customFoodsDB: Record<string, any> = {};
-    try {
-      customFoodsDB = await fetchCustomFoods(user.id);
-    } catch (error) {
-      // Continuar mesmo sem alimentos personalizados
+    
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        
+        if (supabaseUrl && supabaseServiceKey) {
+          // Verificar token do usuário
+          const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'apikey': supabaseServiceKey
+            }
+          });
+          
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            customFoodsDB = await fetchCustomFoods(userData.id);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar alimentos personalizados:', error);
+        // Continuar mesmo sem alimentos personalizados
+      }
     }
+
+    console.log("Iniciando análise de imagem com Google Gemini...");
 
     // Preparar imagem para a API (remover prefixo data:image se presente)
     const base64Image = image.replace(/^data:image\/[a-z]+;base64,/, "");

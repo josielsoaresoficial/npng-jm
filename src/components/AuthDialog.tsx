@@ -305,7 +305,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
           </div>
 
-
           <Button 
             type="submit" 
             className="w-full gradient-hero hover:opacity-90 transition-smooth"
